@@ -1,0 +1,3 @@
+K = 10
+EPSILON = 0.01
+GATE_SPLIT = "dev"

@@ -1,0 +1,61 @@
+---
+course: fieldnote
+order: 8
+title: Эвал и закрытие
+summary: Таблица text-only vs multimodal по двум категориям. Цель ×2. DoD.
+estMinutes: 35
+---
+
+Собери таблицу на полном золоте (стремись к 30–50 вопросам; если пока 10 — таблица всё равно обязательна, расширь набор).
+
+<Scaffold path="projects/fieldnote/src/eval.py">
+`run_all(gold_path)` пишет `logs/eval-report.json` и печатает markdown-таблицу: строки text / visual, столбцы text-only / multimodal, плюс ratio на visual.
+
+Правило accuracy зафиксируй **до** прогона (exact match нормализованной строки, ручная 0/1, или судья с калибровкой). Не меняй правило, подглядев цифры.
+</Scaffold>
+
+<Scaffold path="projects/fieldnote/tests/test_eval_splits.py">
+Юнит **без API**: отчёт содержит оба `kind` и не сваливает их в один accuracy. Подсунь фиктивный dict отчёта. Если тест требует живой ключ — это не юнит, перепиши.
+</Scaffold>
+
+<Command cwd="projects/fieldnote" title="Полный эвал" code={`python -c "from src.eval import run_all; run_all('data/gold.jsonl')"`} />
+
+<Command cwd="projects/fieldnote" title="Юнит на форму отчёта" code={`pytest tests/test_eval_splits.py`} />
+
+## Как считать accuracy
+
+Зафиксируй правило до прогона: exact match нормализованной строки, или ручная разметка 0/1, или LLM-as-judge **с калибровкой на 20 примерах**. Смена правила после просмотра цифр — подгонка.
+
+<Metric>
+Цель: `acc_multimodal_visual / acc_text_only_visual >= 2`. Если ratio ~1 — вернись к кропу: почти наверняка в генерацию не идёт картинка.
+</Metric>
+
+## UI источника
+
+Даже CLI: сохрани кроп в `logs/citations/{qid}.png` и напечатай путь. Веб-морда необязательна для DoD, но источник обязан быть изображением, не строкой.
+
+<DoD>
+- Визуальный вопрос → правильный ответ + вырезанный регион.
+- Таблица text-only vs multimodal по двум категориям.
+</DoD>
+
+<Trap title="Одно среднее">
+Смешать text и visual в один accuracy — спрятать провал multimodal. В отчёте всегда две строки.
+</Trap>
+
+<Practice items={[
+  { id: "report", label: "Есть logs/eval-report.json: четыре accuracy + visual-ratio", hint: "Ячейки: text/text-only, text/multimodal, visual/text-only, visual/multimodal. Ratio = multimodal_visual / text_only_visual. Одно среднее на все вопросы — провал." },
+  { id: "pytest", label: "pytest tests/test_eval_splits.py зелёный без живого API", hint: "Тест проверяет форму отчёта. Если он ходит в сеть — перепиши на фикстуру." },
+  { id: "ratio", label: "Посчитан visual-ratio; если ниже 2 — рядом записано, где пайплайн схлопнулся в текст", hint: "Честный провал с планом (кроп не шлётся, caption-only, плохой retrieve) лучше молчаливого «почти 2». Цель хаба — не меньше 2 или явная диагностика." },
+  { id: "crop-ui", label: "Для прогнанных visual-вопросов сохранены файлы кропов (например logs/citations/)", hint: "Даже CLI: путь к PNG напечатан. Источник — изображение, не строка «см. стр. 12»." }
+]}>
+Правило accuracy не меняй после просмотра цифр. Прогон run_all на полном gold. Без таблицы курс не закрыт.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** таблица существует и visual-ratio ≥ 2 **или** честно объяснён провал с планом рядом с числами.
+
+**Как проверить:** eval-report.json + кропы + pytest. Сравни с DoD хаба.
+
+**Ещё рано, если:** нет отчёта; одно среднее; ratio ниже 2 и тишина; кропов нет.
+</Checkpoint>

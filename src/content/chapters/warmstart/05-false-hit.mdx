@@ -1,0 +1,49 @@
+---
+course: warmstart
+order: 5
+title: False-hit
+summary: Попадание с чужим интентом. Формула и прогон на валидации.
+estMinutes: 25
+---
+
+Определение, которое нельзя размывать:
+
+**Hit** — слой вернул кэш.
+
+**False-hit** — hit, и `intent_id` запроса ≠ `intent_id` кэша (значит, правильный ответ другой).
+
+**False-hit rate** = false-hits / hits (на семантическом слое), либо false-hits / все запросы — **выбери одну формулу, подпиши ось, не меняй**.
+
+Рекомендация плана: доля «попаданий с разным правильным ответом» = false-hits / semantic hits. Отдельно покажи coverage: semantic hits / все запросы.
+
+<Scaffold path="projects/warmstart/src/metrics.py">
+`false_hit_rate(rows, threshold)` по dump scores.
+</Scaffold>
+
+<Scaffold path="projects/warmstart/tests/test_false_hit.py">
+Юнит на фикстуре из трёх пар: same intent high score, different intent high score, miss. Без API.
+</Scaffold>
+
+<Command cwd="projects/warmstart" title="Посчитать false-hit на одном пороге" code={`python -c "from src.metrics import false_hit_rate; print(false_hit_rate('logs/semantic-scores.jsonl', 0.86))"`} />
+
+<Command cwd="projects/warmstart" title="Юнит формулы" code={`pytest tests/test_false_hit.py`} />
+
+<Trap title="Считать false-hit как 1 - accuracy бота">
+Это другая метрика. False-hit — свойство кэша, не генерации.
+</Trap>
+
+<Practice items={[
+  { id: "formula", label: "Формула false-hit записана в README и в коде одним местом", hint: "Одно определение: среди semantic hit доля пар с разным intent_id (или как в главе). Код импортирует ту же функцию, что тест. Не две разные дроби." },
+  { id: "pytest", label: "tests/test_false_hit.py зелёный на фикстуре, без сети", hint: "Подсунь готовые пары hit. Если тест ходит в эмбеддинги — это не юнит формулы." },
+  { id: "one-threshold", label: "Посчитан false-hit хотя бы на пороге 0.86 (или выбранном в главе)", hint: "Скрипт по dump scores. Число воспроизводится повторным запуском. Не «на глаз мало ошибок»." }
+]}>
+Формула до кривой рабочей точки. Считай на отложенных парах, не на тех, кем крутил индекс.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** число false-hit воспроизводится юнитом и скриптом с одной формулой.
+
+**Как проверить:** pytest + повторный скрипт на dump. README совпадает с кодом.
+
+**Ещё рано, если:** две формулы; нет теста; порог «примерно».
+</Checkpoint>

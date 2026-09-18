@@ -1,0 +1,97 @@
+---
+import Base from "../../layouts/Base.astro";
+import SiteHeader from "../../components/SiteHeader.astro";
+import CourseCard from "../../components/CourseCard.astro";
+import {
+  courseHref,
+  getChapters,
+  getCourses,
+  getSection,
+  getSections,
+} from "../../lib/content";
+
+export async function getStaticPaths() {
+  const sections = await getSections();
+  return sections.map((section) => ({ params: { track: section.id } }));
+}
+
+const { track } = Astro.params;
+const section = await getSection(track!);
+if (!section) throw new Error(`Unknown track: ${track}`);
+const courses = await getCourses(section.id);
+const counts = Object.fromEntries(
+  await Promise.all(
+    courses.map(async (course) => [course.id, (await getChapters(course.id)).length] as const),
+  ),
+);
+const isAi = section.id === "ai";
+---
+
+<Base title={`${section.data.title} — Learning`} description={section.data.tagline}>
+  <SiteHeader trackSlug={section.id} trackTitle={section.data.title} showPrinciples={isAi} />
+  <main class="mx-auto max-w-6xl px-6 pb-24 md:px-10">
+    <section class="border-b border-line py-14 md:py-20">
+      <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+        Раздел {String(section.data.order).padStart(2, "0")}
+      </p>
+      <h1 class="mt-3 max-w-3xl font-serif text-4xl leading-[1.15] tracking-tight md:text-5xl">
+        {section.data.title}
+      </h1>
+      <p class="mt-6 max-w-2xl font-serif text-lg leading-relaxed text-muted">
+        {section.data.tagline}
+      </p>
+      <p class="mt-4 max-w-2xl font-serif text-ink/90">{section.data.goal}</p>
+      <p class="mt-6 font-mono text-xs text-faint">Стек: {section.data.stack.join(" · ")}</p>
+    </section>
+
+    <section>
+      {
+        courses.map((course) => (
+          <CourseCard
+            href={courseHref(section.id, course.id)}
+            slug={course.id}
+            order={course.data.order}
+            title={course.data.title}
+            skill={course.data.skill}
+            goal={course.data.goal}
+            metric={course.data.metric}
+            pilot={course.data.pilot}
+            chapterCount={counts[course.id] ?? 8}
+          />
+        ))
+      }
+    </section>
+
+    {
+      isAi && (
+        <section id="principles" class="mt-8 border-t border-line pt-12">
+          <h2 class="font-serif text-2xl">Сквозные принципы</h2>
+          <ol class="mt-6 grid gap-6 font-serif text-[1.02rem] leading-relaxed text-muted md:grid-cols-2">
+            <li><span class="text-accent">01.</span> Метрика с первого дня. Нет числа — проект не сделан.</li>
+            <li><span class="text-accent">02.</span> Baseline обязателен. Улучшение без точки отсчёта — не улучшение.</li>
+            <li><span class="text-accent">03.</span> Логируй каждый вызов: токены, стоимость, латентность.</li>
+            <li><span class="text-accent">04.</span> Синтетика с ground truth — нормально и часто лучше логов.</li>
+            <li><span class="text-accent">05.</span> Не тащи фреймворк раньше боли. Сначала ручной tool-loop.</li>
+            <li><span class="text-accent">06.</span> Начинай с Haiku. Sonnet и Opus — только если эвал требует.</li>
+          </ol>
+        </section>
+      )
+    }
+
+    {
+      section.id === "web" && (
+        <section class="mt-8 border-t border-line pt-12">
+          <h2 class="font-serif text-2xl">Сквозные правила</h2>
+          <ol class="mt-6 grid gap-6 font-serif text-[1.02rem] leading-relaxed text-muted md:grid-cols-2">
+            <li><span class="text-accent">01.</span> Сначала браузер и файлы, потом Node, потом Vite.</li>
+            <li><span class="text-accent">02.</span> Тема закрыта, когда открыта страница или работает <code>npm run dev</code>.</li>
+            <li><span class="text-accent">03.</span> Установка только через терминал, с проверкой версии.</li>
+            <li><span class="text-accent">04.</span> Не ставим Create React App.</li>
+            <li><span class="text-accent">05.</span> Не тащим Tailwind и Next — это другой курс.</li>
+            <li><span class="text-accent">06.</span> Основной путь — JavaScript + JSX, не TypeScript.</li>
+          </ol>
+        </section>
+      )
+    }
+  </main>
+</Base>

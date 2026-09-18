@@ -1,0 +1,39 @@
+---
+course: warmstart
+order: 4
+title: Семантический слой
+summary: Эмбеддинги и порог similarity. Здесь начинается риск.
+estMinutes: 35
+---
+
+<Scaffold path="projects/warmstart/src/cache/semantic.py">
+Хранилище векторов (LanceDB / Chroma / numpy). `lookup(query, threshold) -> hit | None` с score и intent_id соседа.
+</Scaffold>
+
+На старте один эмбеддер на всё. Cosine similarity. Порог пока параметр, не константа «0.8 потому что все так делают».
+
+Не возвращай hit, если score < threshold. Логируй score всегда — кривая в следующей главе строится из этих логов, если сохранишь прогон без отсечки.
+
+<Command cwd="projects/warmstart" title="Прогон semantic без отсечки" code={`python -c "from src.cache.semantic import dump_scores; dump_scores('data/intents.jsonl', 'logs/semantic-scores.jsonl')"`} />
+
+`dump_scores` для каждого запроса пишет top-1 соседа, score, совпал ли intent_id. Это сырьё для false-hit.
+
+<Action title="Запрети утечку самого запроса">
+При поиске соседа исключай идентичный ключ. Иначе hit-rate = 100% и ты ничему не научился.
+</Action>
+
+<Practice items={[
+  { id: "store", label: "Векторное хранилище заполнено эмбеддингами фраз (не сырым текстом как ключом)", hint: "Индексируй канонические/train фразы. Модель эмбеддингов зафиксируй. Запрос эмбеддится той же моделью." },
+  { id: "self", label: "Запрос не матчится сам с собой, если это тот же текст из индекса", hint: "Иначе top-1 всегда «я». Исключи identical id или не клади запрос в индекс на валидации. Нужен сосед, не Narcissus." },
+  { id: "scores", label: "Снят dump всех (или top-n) scores без отсечения порогом — для кривой", hint: "Файл JSON/CSV: query, neighbor, score, same_intent. Без dump главу про порог не сделать честно." }
+]}>
+Пока не выбирай порог. Сними скоры. Semantic lookup возвращает соседа и score, не сразу «hit».
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** у валидационных фраз есть top-1 сосед и score, не только «похоже / не похоже».
+
+**Как проверить:** открыть dump, увидеть числа. Self-match исключён.
+
+**Ещё рано, если:** порог уже 0.86 без кривой; в индексе нет векторов; запрос всегда находит себя.
+</Checkpoint>

@@ -1,0 +1,21 @@
+---
+interface Props {
+  track: string;
+  course: string;
+  nextHref: string;
+  label?: string;
+}
+
+const { track, course, nextHref, label = "Продолжить" } = Astro.props;
+---
+
+<a
+  href={nextHref}
+  data-astro-prefetch
+  data-continue
+  data-track={track}
+  data-course={course}
+  class="inline-flex items-center border border-accent bg-accent px-4 py-2.5 font-mono text-[12px] uppercase tracking-[0.16em] text-paper hover:bg-ink hover:text-paper"
+>
+  {label}
+</a>

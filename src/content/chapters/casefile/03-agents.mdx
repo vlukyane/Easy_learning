@@ -1,0 +1,72 @@
+---
+course: casefile
+order: 3
+title: Четыре агента
+summary: Узкие роли, отдельный tool-loop на Claude, без фреймворка.
+estMinutes: 40
+---
+
+Каждый агент — функция: `ClaimIntake | предыдущий Handoff` → `Handoff` со своим payload. Узкий системный промпт, structured output / tool с JSON-схемой.
+
+<Scaffold path="projects/casefile/src/agents/intake.py">
+Функция `run(...)` → `Handoff` с payload `IntakeResult`. Узкий системный промпт: извлеки поля из нарратива.
+
+**Что сделать / какие поля:** `claim_id`, `narrative`, `claimed_amount`, `incident_date`, `facts`. Structured output или tool с JSON-схемой. Невалидный JSON — retry **один** раз, потом `Handoff` со статусом error. Вызов модели пиши в JSONL (токены, `cost_usd`), как в Fieldnote.
+
+**Чего не делать:** не классифицируй тип претензии, не ставь фрод-флаги, не предлагай сумму выплаты.
+</Scaffold>
+
+<Scaffold path="projects/casefile/src/agents/classifier.py">
+`run(handoff) → Handoff` с `ClassifierResult`.
+
+**Поля:** `claim_type`, `priority` (`low` | `medium` | `high`), `confidence`. Тот же контракт: схема на выходе, один retry, строка в лог.
+
+**Чего не делать:** не смотри «на глаз» сумму выплаты и не решай, слать ли к человеку — это fraud и assessor.
+</Scaffold>
+
+<Scaffold path="projects/casefile/src/agents/fraud.py">
+`run(handoff) → Handoff` с `FraudResult`. Красные флаги по нарративу и фактам intake.
+
+**Поля:** `risk` (`low` | `medium` | `high`), `flags: list[str]`, `send_to_human: bool`. Имеет право выставить `send_to_human=True` — оркестратор это прочитает в следующей главе.
+
+**Чего не делать:** не вызывает payout и не считает `recommended_payout`.
+</Scaffold>
+
+<Scaffold path="projects/casefile/src/agents/assessor.py">
+`run(handoff) → Handoff` с `Assessment`. Только предлагает сумму.
+
+**Поля:** `recommended_payout`, `rationale_facts: list[str]`.
+
+**Чего не делать:** не исполняет выплату, не ставит `approved=True`, нет инструмента `approve`. Payout — глава 6, обычная функция.
+</Scaffold>
+
+Общий клиент и лог — как в Fieldnote: Haiku первым, JSONL на каждый вызов. Если JSON не парсится — **retry один раз**, потом `Handoff` со статусом error, а не «ну почти».
+
+<Command cwd="projects/casefile" title="Прогнать intake на одной заявке" code={`python -c "from src.agents.intake import run; print(run('data/claims.jsonl'))"`} />
+
+Начни с одной строки из example-файла. Остальные агенты подключай по одному: не пиши оркестратор, пока каждый не возвращает валидную модель.
+
+<Action title="Собери четыре фикстуры">
+В `tests/fixtures/` положи по одному каноническому входу/выходу на агента без вызова API (замоканный JSON). Это пригодится оркестратору.
+</Action>
+
+<Trap title="Один жирный промпт на четверых">
+Если все роли в одном вызове, ты не увидишь, где ломается контракт. Держи процессы раздельными даже ценой лишних центов — потолок как раз это и измеряет.
+</Trap>
+
+<Practice items={[
+  { id: "intake", label: "Intake.run возвращает Handoff с IntakeResult, не свободную строку модели", hint: "Команда главы на одной строке из example (CLM-001). Печать — поля модели. Если видишь сырой completion, парсинг не закрыт. Не корми intake всем файлом «как текст» без схемы." },
+  { id: "four-files", label: "Четыре модуля существуют: intake, classifier, fraud, assessor — у каждого свой узкий промпт", hint: "Файлы в src/agents/. Не склеивай четыре роли в один вызов. Промпт intake не должен упоминать выплату. На каждого — каноническая фикстура в tests/fixtures/ без API." },
+  { id: "retry", label: "Невалидный JSON не протекает дальше: один retry, затем Handoff со статусом error", hint: "Подсунь ломаный JSON в фикстуре. Второй мусор не должен стать «почти IntakeResult». Оркестратор ещё не пиши — лови ошибку в агенте." },
+  { id: "logged", label: "Каждый вызов агента дописывает JSONL с model, tokens и cost_usd", hint: "Одна строка на вызов, как в Fieldnote. Открой лог глазами. Нет cost_usd — потолок в главе 5 будет гаданием. Первая модель — Haiku, не Opus." }
+]}>
+Работай в `src/agents/`. Подключай агентов по одному на фикстуре, без живого оркестратора. Не пиши `orchestrator.py` в этой главе и не собирай все роли в один промпт.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** четыре агента по отдельности едят фикстуру и отдают валидный payload своего типа.
+
+**Как проверить:** intake-команда из главы на одной заявке; замоканный JSON на остальных трёх. В логе есть `cost_usd`. Pytest схем из главы 2 всё ещё зелёный.
+
+**Ещё рано, если:** один жирный промпт на четверых; агент печатает текст, не модель; ломаный JSON «как-нибудь» парсится; оркестратор уже написан, а фикстур нет.
+</Checkpoint>

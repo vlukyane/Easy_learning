@@ -1,0 +1,66 @@
+---
+course: casefile
+order: 7
+title: Синтетика и прогон
+summary: 50–100 заявок с известным маршрутом, фрод, метрики стоимости.
+estMinutes: 40
+---
+
+Синтетика здесь лучше реальных претензий: у тебя есть ground truth маршрута.
+
+<Scaffold path="projects/casefile/data/claims.jsonl.example">
+Шаблон строк. Скопируй схему в `data/claims.jsonl` (уже без `.example`) и набери 50–100 заявок. Батч — `run_batch` в `src/orchestrator.py`: печать сводки и запись `logs/batch-summary.json`.
+
+**Поля строки:** `claim_id`, `narrative`, `claimed_amount`, `incident_date`, `expected_route` (список состояний), `is_fraud`, `notes`.
+
+**Классы (минимум по несколько штук):**
+- чистые простые (как CLM-001 → до `payout_gate`);
+- high-fraud (как CLM-002 → `human_review`, без assess);
+- большая сумма (HITL);
+- тяжёлые по токенам (потолок, `stopped_cost_ceiling`);
+- мусорный нарратив (ошибка intake).
+
+**Чего не делать:** не клонируй 50 одинаковых «rear bumper». Без известного `expected_route` батч не измерить. Не подгоняй маршруты после просмотра ошибок модели — чини агентов или честно считай mismatch.
+</Scaffold>
+
+Собери 50–100 строк. Минимум классов:
+
+- чистые простые
+- high-fraud
+- большая сумма (HITL)
+- тяжёлые по токенам (потолок)
+- мусорный нарратив (ошибка intake)
+
+`expected_route` — список состояний, например `intake,classify,fraud,human`.
+
+<Command cwd="projects/casefile" title="Батч" code={`python -c "from src.orchestrator import run_batch; run_batch('data/claims.jsonl', limit_usd=0.15)"`} />
+
+Сводка, которую обязан напечатать батч:
+
+- число заявок
+- доля точных попаданий в `expected_route`
+- 0 payouts without approval (инвариант)
+- доля `stopped_cost_ceiling`
+- средние центы на заявку
+- 0 `ValidationError` на хендоффах
+
+<Metric>
+Инварианты: 0 выплат без approval, 0 необработанных превышений ceiling (либо stop, либо ты поднял лимит осознанно), 0 ошибок парсинга. Плюс одно число: ¢/claim.
+</Metric>
+
+<Practice items={[
+  { id: "n50", label: "В data/claims.jsonl не меньше 50 заявок, у каждой заполнен expected_route", hint: "Скопируй example. Классы из главы на месте. expected_route — список состояний, как у CLM-001/002/003, не пустая строка. Пятьдесят одинаковых бамперов не считаются." },
+  { id: "batch", label: "Батч прогнан через run_batch, сводка лежит в logs/batch-summary.json", hint: "Команда главы с limit_usd=0.15. В сводке: число заявок, доля попаданий в expected_route, доля ceiling-stop, средние центы. Если файла нет — пиши JSON, не только stdout." },
+  { id: "invariants", label: "Проверены три нуля: 0 выплат без approval, 0 необработанных превышений ceiling, 0 ValidationError на хендоффах", hint: "Числа в сводке, не «вроде не падало». Ceiling — либо stop, либо лимит поднят осознанно. Ни один мусорный payload не прошёл дальше." },
+  { id: "cents", label: "Записана средняя стоимость одной заявки в центах, не только total USD", hint: "Цель хаба — центы на заявку. Подели суммарный cost на число заявок и умножь на 100. В README числа перенесёшь в следующей главе." }
+]}>
+Собери корпус в `data/claims.jsonl`, затем `run_batch`. Не подгоняй `expected_route` после того, как увидел, куда модель реально пошла.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** сводка батча существует и инварианты посчитаны числами, а не «вроде не падало».
+
+**Как проверить:** открой `logs/batch-summary.json`: n ≥ 50, route-match, три нуля, центы на заявку. Сверь пару трасс с `expected_route` глазами.
+
+**Ещё рано, если:** меньше 50 строк; нет `expected_route`; сводка только в терминале; инварианты «на глаз».
+</Checkpoint>

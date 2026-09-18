@@ -1,0 +1,48 @@
+---
+course: react
+order: 8
+title: Пилот и закрытие
+summary: Доска на React. Нет ручного DOM.
+estMinutes: 38
+---
+
+Сводка пилота: **state → JSX → экран**. Массив карточек в родителе (или в custom hook), колонки получают props, клик вызывает setter, React перерисовывает описание. Прямого DOM (`document.createElement`, `querySelector` ради UI доски) нет.
+
+Нового задания нет: доведи ту же доску до DoD.
+
+Своими словами: компонент — функция; props вниз; state — память; эффект — внешний мир; JSX — не HTML.
+
+<DoD>
+- Карточки из массива state.
+- Нет document.createElement в UI доски.
+- Нет коврового memo.
+</DoD>
+
+Сотри стартовый логотип Vite из `App.jsx`. Доска — главный экран.
+
+Детали `vite.config` — следующая тема; сейчас достаточно `npm run dev`.
+
+<Command cwd="projects/web/react" title="Проверка" code={`nvm use 22
+npm run dev`} />
+
+<Scaffold path="projects/web/react/src/App.jsx">
+Главный экран — доска, не логотип Vite. Карточки из state (или custom hook). Поиск по src: нет createElement/querySelector для UI колонок.
+
+DoD: массив state, нет коврового memo. `npm run dev` достаточен; тонкий vite.config — следующая тема.
+</Scaffold>
+
+<Practice items={[
+  { id: "spa", label: "Доска открывается на localhost как одностраничное приложение: добавить, перенести, F5", hint: "Не file://. Форма контролируемая. После reload карточки на месте (эффект). Три колонки — один компонент." },
+  { id: "dod", label: "DoD хаба: карточки из массива state, нет ручного DOM, нет коврового memo", hint: "Поиск createElement и querySelector в src. Поиск memo — пусто или одно осознанное место." },
+  { id: "explain-react-close", label: "Своими словами: state → JSX → экран, без прямого DOM", hint: "Повтори цепочку: событие, setter, новый JSX, сверка. Ручной DOM из js-темы здесь не жилец." }
+]}>
+Нового задания нет. Доведи ту же доску. Если чего-то нет — вернись в нужную главу, не маскируй querySelector.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** доска на dev-сервере, без ручного DOM, DoD выполнен.
+
+**Как проверить:** npm run dev, полный пользовательский круг, поиск по src.
+
+**Ещё рано, если:** логотип Vite вместо доски; карточки только «нарисованы» статикой; memo на всём.
+</Checkpoint>

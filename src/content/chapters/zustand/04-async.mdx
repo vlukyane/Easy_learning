@@ -1,0 +1,55 @@
+---
+course: zustand
+order: 4
+title: Async actions
+summary: Загрузка фейкового JSON. Стор не обязан быть синхронным.
+estMinutes: 30
+---
+
+## Что это
+
+**Action может быть `async`.** Стор — не «только синхронный Redux 2015». Функция `load` ждёт сеть, потом вызывает `set` с результатом. Пока ждёт, можно `set({ loading: true })`.
+
+**`fetch`** в браузере качает URL (у нас `/cards.json` из `public`). Ответ — тело; `res.json()` парсит текст в объект. Ошибку сети кладут в поле стора `error`, не в `alert`.
+
+## Зачем
+
+Без async всё «уже в памяти». Учебный JSON — как будто сервер отдал стартовые карточки. Боль: fetch в каждом компоненте, гонки, двойная загрузка. Action в сторе — одно место.
+
+## Как работает
+
+Положи `public/cards.json` с учебными карточками. Action:
+
+```js
+load: async () => {
+  const res = await fetch("/cards.json");
+  const cards = await res.json();
+  set({ cards });
+},
+```
+
+В компоненте не дублируй fetch в useEffect, если загрузка — часть стора: `useEffect(() => { useBoard.getState().load(); }, []);`
+
+`get()` внутри create даёт текущее состояние для compose actions.
+
+<Scaffold path="projects/web/react/public/cards.json">
+Положи учебный массив карточек (те же поля id, title, column). Action `load` в сторе: fetch('/cards.json'), затем set. Ошибку сети пиши в поле `error` стора, не alert.
+
+В компоненте один раз при монтировании: `useBoard.getState().load()`. Не дублируй fetch в трёх колонках. Конфликт с persist — следующая глава: пока достаточно, что JSON грузится.
+</Scaffold>
+
+<Practice items={[
+  { id: "json", label: "Есть public/cards.json и async action load, который пишет карточки в стор", hint: "Файл в public, URL /cards.json. fetch в action, не в теле рендера. После load колонки показывают данные из файла (если storage пуст или ты ещё без persist)." },
+  { id: "error", label: "Ошибка fetch попадает в поле стора и видна в UI или хотя бы читается из state", hint: "Оборви URL нарочно. Не только console.error. Пользователь доски должен понять, что загрузка не удалась." },
+  { id: "explain-async", label: "Своими словами: action может быть async, fetch, set результата; стор не только синхронный", hint: "Пока ждёшь — можно loading: true. Это не Redux 2015. get() нужен, чтобы читать текущее в другом action." }
+]}>
+JSON — учебный «сервер». Настоящий бэкенд не нужен. Не клади JSON в src и не жди /cards.json оттуда без import.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** доска умеет стартовать с файла, ошибка не только в console.
+
+**Как проверить:** чистый localStorage, reload, карточки из JSON. Сломанный URL → error в сторе.
+
+**Ещё рано, если:** fetch в каждом рендере; JSON в src без понимания public; нет async action.
+</Checkpoint>

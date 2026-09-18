@@ -1,0 +1,51 @@
+---
+course: slotfill
+order: 2
+title: Данные и сплит
+summary: Генератор инвойсов с известными полями. Test не трогать.
+estMinutes: 35
+---
+
+Синтетика даёт идеальную разметку. Это нормально. Опасность — утечка test в train: один и тот же шаблон номера, один перевозчик, копипаста адресов.
+
+<Scaffold path="projects/slotfill/src/data/generate.py">
+Генерирует инвойсы (текст или простой PDF) и JSON полей. Разные шаблоны перевозчиков.
+</Scaffold>
+
+<Scaffold path="projects/slotfill/src/data/split.py">
+Делит по `invoice_id` на train/val/test. Фиксированный seed. Пишет `data/splits.json`.
+</Scaffold>
+
+<Scaffold path="projects/slotfill/tests/test_split.py">
+Пересечение id train/val/test пустое.
+</Scaffold>
+
+Для отладки можно 2k документов. К LoRA-главе наращивай к десяткам тысяч, если железо позволяет; если нет — честно уменьши N и отрази это в выводе «зависит от объёма».
+
+<Command cwd="projects/slotfill" title="Сгенерировать и разрезать" code={`python -c "from src.data.generate import main; main(n=2000)"
+python -c "from src.data.split import main; main()"
+pytest tests/test_split.py`} />
+
+<Action title="Разведи шаблоны по сплитам осторожно">
+Либо все шаблоны во всех сплитах, либо явный generalization-тест на held-out шаблон. Не клади уникальный шаблон только в train.
+</Action>
+
+<Trap title="Утечка test в train">
+Особенно легко на синтетике. Фиксируй разбиение файлом, не `random` без seed.
+</Trap>
+
+<Practice items={[
+  { id: "gen", label: "Генератор пишет пары: документ + золотые поля по одной схеме", hint: "Не вручную 10 файлов без скрипта, если генератор уже задуман в скелете. id документа стабильный. Поля те же, что потом извлечёте." },
+  { id: "split-file", label: "data/splits.json фиксирует train/val/test и seed", hint: "Повторный запуск даёт те же id. Seed в файле, не «помню примерно». test не подмешивается в few-shot." },
+  { id: "pytest", label: "pytest подтверждает: пересечение id train∩test и train∩val пустое", hint: "tests/test_split.py. Если тест читает живые данные плохо — фикстура маленького splits.json." }
+]}>
+Сплит до промпта и до LoRA. Утечка test в few-shot — главная дыра курса.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** test id нельзя встретить в train даже если очень хочется.
+
+**Как проверить:** pytest + открыть splits.json, выборочно grep id.
+
+**Ещё рано, если:** деление «на глаз 80/20» каждый раз разное; нет seed; нет теста пересечений.
+</Checkpoint>

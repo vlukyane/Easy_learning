@@ -1,0 +1,77 @@
+---
+course: zustand
+order: 2
+title: Стенд и create
+summary: npm install zustand. Store, actions, чтение в компоненте.
+estMinutes: 38
+---
+
+## Что это
+
+**`create`** делает хранилище: объект состояния + функции, которые его меняют.
+
+**`set`** записывает **кусок** state (мерж верхнего уровня): `set({ cards: next })` или `set((s) => ({ cards: [...s.cards, card] }))`. Не мутируй `s.cards.push`.
+
+**Action** — функция в сторе, которая вызывает `set` (и иногда `get`). Компонент не раскидывает логику «как склеить карточку» — вызывает `add(title)`.
+
+**Хук-подписка:** `useBoard((s) => s.add)` — компонент слушает выбранное. Без селектора (`useBoard()`) — слушает **всё**, ререндер на любой чих.
+
+**`npm install zustand`** пишет пакет в `package.json` **и** кладёт код в `node_modules`. Это не «включилось в React само».
+
+## Зачем
+
+Без actions карточки снова собирают в `App`. Без понимания `set` новичок делает `state.cards.push` — UI молчит. Без локального install импорт `zustand` красный.
+
+## Как работает
+
+В том же приложении, что React/Vite:
+
+<Command cwd="projects/web/react" title="Установка zustand" code={`nvm use 22
+npm install zustand
+node -e "console.log(require('./package.json').dependencies.zustand)"`} />
+
+Ожидание: в выводе номер версии, в `package.json` появилась зависимость.
+
+Минимальный стор `src/store/board.js`:
+
+```js
+import { create } from "zustand";
+
+export const useBoard = create((set) => ({
+  cards: [],
+  add: (title) =>
+    set((s) => ({
+      cards: [...s.cards, { id: crypto.randomUUID(), title, column: "todo" }],
+    })),
+}));
+```
+
+В компоненте: `const add = useBoard((s) => s.add);` — не весь стор сразу.
+
+Если хочешь отдельную копию проекта — скопируй `projects/web/react` в `projects/web/zustand` после install.
+
+### Linux / Windows
+
+Та же команда `npm install zustand`.
+
+<Scaffold path="projects/web/react">
+`npm install zustand` в **этом** приложении. Проверь `package.json` → dependencies. Файл стора: `src/store/board.js` с `create`, массив `cards`, action `add`.
+
+В компоненте: `useBoard((s) => s.add)`, не `useBoard()` без селектора. Карточка с экрана должна появляться через action, не через useState в App.
+</Scaffold>
+
+<Practice items={[
+  { id: "dep", label: "zustand прописан в dependencies package.json, пакет лежит в node_modules", hint: "Команда install из папки react при nvm 22. Вывод node -e с версией как в главе. Это не глобальная установка." },
+  { id: "create", label: "Стор create существует, кнопка «Добавить» вызывает action add, карточка на экране", hint: "set мержит новый массив, не push в старый. id через randomUUID или аналог. App больше не держит cards в useState — или уже переезжает." },
+  { id: "explain-create", label: "Своими словами: create, set, action, хук-подписка, что делает npm install", hint: "install пишет package.json и папку node_modules. Хук без селектора подписан на всё — колонки будут мигать зря." }
+]}>
+Ставь пакет, создай стор, подключи одну кнопку. Селекторы колонок — следующая глава, persist — позже.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** карточка добавляется action-ом стора, не useState(cards) в App.
+
+**Как проверить:** React DevTools / лог: add из стора. package.json содержит zustand.
+
+**Ещё рано, если:** install в другой папке; стор есть, UI всё ещё пушит в локальный массив; useBoard() без селектора на всём дереве.
+</Checkpoint>

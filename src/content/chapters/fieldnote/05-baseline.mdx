@@ -1,0 +1,60 @@
+---
+course: fieldnote
+order: 5
+title: Text-only baseline
+summary: Обычный RAG по текстовым чанкам. Точка отсчёта, которую multimodal обязан побить.
+estMinutes: 40
+---
+
+Без baseline ты не имеешь права говорить, что multimodal «лучше». Сначала честный text-only RAG: чанки, эмбеддинги, Chroma или LanceDB, ответ Claude **без картинок**.
+
+<Scaffold path="projects/fieldnote/src/index.py">
+`build_text_index(pages)` — режет sidecar-текст на чанки, пишет в локальную векторную БД (Chroma/LanceDB — что уже в зависимостях). Картинки сюда не клади. Модель эмбеддингов зафиксируй в логе или README.
+</Scaffold>
+
+<Scaffold path="projects/fieldnote/src/retrieve.py">
+`retrieve_text(question, k)` — только текстовые чанки, без изображений. k зафиксируй константой. Нужен, чтобы generate не ходил в индекс сам.
+</Scaffold>
+
+<Scaffold path="projects/fieldnote/src/generate.py">
+`answer_text_only(question, chunks)` — Claude без vision. В промпт идут чанки, не PNG. Цитата: pdf/page из чанка. Каждый вызов через log_call.
+</Scaffold>
+
+## Как чанкать
+
+Начни с простого: страница = чанк, если текста мало; иначе окна 500–800 символов с перекрытием. Не оптимизируй чанкер, пока нет цифр на золоте.
+
+Эмбеддинги — любые локальные или API, которые ты готов оплатить дважды (text и потом image). Зафиксируй модель эмбеддингов в логе.
+
+<Command cwd="projects/fieldnote" title="Построить text-индекс" code={`python -c "from src.index import build_text_index; build_text_index()"`} />
+
+<Command cwd="projects/fieldnote" title="Прогнать золото text-only" code={`python -c "from src.eval import run_text_only; run_text_only('data/gold.jsonl')"`} />
+
+`run_text_only` должен напечатать accuracy отдельно для `kind=text` и `kind=visual` и дописать прогон в `logs/eval-text.json`.
+
+Ожидание: visual accuracy низкая. Если она высокая — пересмотри разметку: вопросы, скорее всего, не визуальные.
+
+<Metric>
+Запиши два числа: accuracy_text и accuracy_visual для text-only. Это знаменатель будущей дроби «во сколько раз multimodal лучше».
+</Metric>
+
+<Trap title="Подглядывание в multimodal">
+Не подмешивай подписи VLM в text-индекс «чтобы baseline не был слишком слабым». Слабый visual-score — желаемый результат этой главы.
+</Trap>
+
+<Practice items={[
+  { id: "index", label: "Text-индекс построен из sidecar-текста страниц, не из VLM-подписей", hint: "Команда build_text_index. В индекс не подмешивай captions «чтобы не было стыдно». Слабый visual — цель главы." },
+  { id: "run-gold", label: "Золотой набор прогнан text-only, результат в logs/eval-text.json", hint: "run_text_only на data/gold.jsonl. Печать accuracy отдельно для kind=text и kind=visual, не одно общее число." },
+  { id: "two-numbers", label: "Записаны два числа baseline: accuracy_text и accuracy_visual", hint: "В README или logs. Это знаменатель будущей дроби ×2. Без них multimodal «лучше» не доказать." },
+  { id: "visual-weak", label: "Visual-score заметно ниже text-score — или вопросы переразмечены", hint: "Если visual внезапно высокий — открой вопросы: они текстовые. Исправь gold, не радуйся." }
+]}>
+Не оптимизируй чанкер. Не подглядывай в multimodal-ветку. Слабый visual-baseline — успех этой главы.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** есть два числа text-only на золоте и visual-ветка не случайно сильная.
+
+**Как проверить:** eval-text.json + сверка нескольких visual-промахов глазами.
+
+**Ещё рано, если:** одно усреднённое accuracy; в индекс подмешаны подписи; золото не прогонялось.
+</Checkpoint>

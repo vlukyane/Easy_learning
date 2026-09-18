@@ -1,0 +1,43 @@
+---
+course: slotfill
+order: 4
+title: Вариант B — LoRA
+summary: Маленькая база + адаптер. Подбор на val, test не смотреть.
+estMinutes: 50
+---
+
+<Scaffold path="projects/slotfill/src/baselines/lora.py">
+Инференс адаптера в ту же схему полей.
+</Scaffold>
+
+<Scaffold path="projects/slotfill/src/train.py">
+Обучение LoRA (`peft` + `transformers`) или вызов облачного тренера. Читает только train, валидирует на val.
+</Scaffold>
+
+Выбери базу, которую реально поднять: 1–3B instruct, если локально; иначе честно опиши облако. Цель главы — сравнение, не SOTA.
+
+Подбор: rank, lr, epochs — на val field-level accuracy. Сохрани `logs/lora-hparams.json`.
+
+<Command cwd="projects/slotfill" title="Тренировка (когда данные и GPU/облако готовы)" code={`python -c "from src.train import main; main()"`} />
+
+Если железа нет: прогони B на крошечном срезе как proof-of-pipe и в выводе напиши, что полномасштабное сравнение не выполнено — это честнее фиктивных цифр.
+
+<Trap title="Test в early stopping">
+Early stopping по test — утечка. Только val.
+</Trap>
+
+<Practice items={[
+  { id: "train-script", label: "train.py не читает test split даже «чтобы посмотреть качество»", hint: "Grep test в train.py. Val можно. Test — только финальный harness. Если железа нет — явно заглушка с причиной в README, не тихий skip." },
+  { id: "hparams", label: "Гиперпараметры записаны до финального прогона test", hint: "Файл или шапка train: lr, epochs, rank. Не меняй их, подглядев test. Это честность сравнения." },
+  { id: "same-schema", label: "Выход B парсится тем же кодом, что A", hint: "Один parse_fn. Иначе метрики несравнимы. JSON/поля совпадают со схемой." }
+]}>
+Обучение только на train. Если GPU нет — задокументируй блокер, не делай вид, что B измерен.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** адаптер обучается (или явно заблокирован железом) без доступа к test.
+
+**Как проверить:** grep test в train; hparams в файле; тот же парсер.
+
+**Ещё рано, если:** early-stop по test; другая схема выхода; «потом доучу на всём».
+</Checkpoint>

@@ -1,0 +1,60 @@
+---
+course: zustand
+order: 5
+title: persist
+summary: middleware, версия стора, миграции.
+estMinutes: 38
+---
+
+## Что это
+
+**Middleware** — обёртка вокруг стора: перехватывает `set`/`get`. **`persist`** читает и пишет **storage** (по умолчанию `localStorage`) сам: после изменения — stringify, при старте — parse обратно в объект.
+
+**Гидрация** — момент, когда из storage подставили данные. Первый рендер часто ещё пустой (сервер/клиент), второй — уже с карточками. Мерцание «пустая доска на кадр» — часто это, не баг add.
+
+**Версия схемы:** поле `version` + функция `migrate`. Поменял форму карточки (`column` → `status`) — старый JSON без миграции сломает UI молча.
+
+## Зачем
+
+Свой `useEffect` + `stringify` ты уже делал. Middleware не дублирует идею — убирает забытый save и разъезд ключей. Без `version` учебный эксперимент с полями убивает доску студента.
+
+## Как работает
+
+```js
+import { persist } from "zustand/middleware";
+
+export const useBoard = create(
+  persist(
+    (set, get) => ({ /* ... */ }),
+    { name: "study-board-z", version: 1 },
+  ),
+);
+```
+
+Ключ `name` — не ключ JS-темы и не ключ портала.
+
+При мерцании смотри `onRehydrateStorage`.
+
+Конфликт с `load()` из JSON: persist побеждает, если данные уже есть; load — только если storage пуст.
+
+<Scaffold path="projects/web/react/src/store/board.js">
+Оберни create в `persist(..., { name: 'study-board-z', version: 1 })`. Ключ не из JS-темы и не портала.
+
+load() вызывай, только если после гидрации cards пустой. Иначе учебный JSON затрёт живую доску каждый F5.
+</Scaffold>
+
+<Practice items={[
+  { id: "persist", label: "Стор обёрнут persist, F5 сохраняет карточки пользователя", hint: "Добавь карточку руками, обнови. Она на месте, не откатывается к cards.json. Middleware из zustand/middleware." },
+  { id: "name", label: "name в persist не пересекается с ключами JS-доски и портала на localhost", hint: "Application → Local Storage. study-board-z (или своё), не ai-learning-progress-v1, не старый study-board если не хочешь миграции." },
+  { id: "explain-persist", label: "Своими словами: middleware пишет storage, гидрация, version схемы", hint: "Первый кадр может быть пустым — не баг add. Смена полей карточки без version ломает старый JSON." }
+]}>
+Проверь конфликт load vs persist явно: не пустой storage + reload ≠ снова учебный файл.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** persist переживает reload и не затирает доску учебным JSON каждый раз.
+
+**Как проверить:** две карточки пользователя, F5, JSON не победил. Ключ свой.
+
+**Ещё рано, если:** свой useEffect stringify дублирует persist вразнобой; load всегда затирает стор учебным JSON с файла.
+</Checkpoint>

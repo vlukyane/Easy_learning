@@ -1,0 +1,58 @@
+---
+course: fieldnote
+order: 7
+title: Hybrid retrieval и generation
+summary: Слияние text+image, в Claude vision — кроп страницы, в ответе — цитата page_id + bbox.
+estMinutes: 45
+---
+
+Retrieval гибридный: текстовые чанки и картинки сливаются в один ranked list. Generation — vision: модель видит **вырезанный регион**, не пересказ.
+
+<Scaffold path="projects/fieldnote/src/retrieve.py">
+`retrieve_hybrid(question, k)` — text hits + image hits, склейка RRF (не сумма разных cosine). Каждый hit с типом `text` или `image`. k тот же дух, что у baseline.
+</Scaffold>
+
+<Scaffold path="projects/fieldnote/src/generate.py">
+`answer_multimodal(question, hits)` и `demo(question)`. Если hit типа image — в API уходит **файл PNG кропа** (страница целиком ок для v1, bbox — лучше). Не текстовое описание региона.
+
+Ответ + citation `{ pdf, page, bbox }`. Vision-вызов через log_call. Сначала Haiku, Sonnet — если эвал слаб.
+</Scaffold>
+
+## Fusion
+
+Reciprocal rank fusion не требует калибровки скоров разных модальностей. Начни с него. Не суммируй cosine от разных эмбеддеров как есть.
+
+## Generation
+
+Правило цитирования: если источник `image`, в модель идёт PNG кропа (страница целиком — допустимый v1, bbox — v2). Если источник `text`, картинку можно не слать.
+
+Модель: сначала Haiku с vision, если эвал слаб — Sonnet. Каждый вызов через `log_call`.
+
+<Command cwd="projects/fieldnote" title="Один визуальный вопрос вручную" code={`python -c "from src.generate import demo; demo('Какой момент затяжки для M8?')"`} />
+
+`demo` печатает ответ и путь к кропу. Открой кроп: это должна быть та страница/регион, а не случайный титульный лист.
+
+<Action title="Сравни с подписью">
+На одном visual-вопросе сравни три выхода: text-only, caption-only (если делал), crop-in-vision. Запиши, кто соврал. Это качественная проверка перед полным эвалом.
+</Action>
+
+<Trap title="Цитата строкой вместо картинки">
+UI и DoD требуют показать источник как изображение. Если система возвращает только «стр. 112», навык не закрыт.
+</Trap>
+
+<Practice items={[
+  { id: "hybrid", label: "retrieve_hybrid возвращает смешанные hits с типами text и image", hint: "На visual-вопросе в списке должен быть image-hit. Не суммируй скоры разных эмбеддеров как есть — RRF." },
+  { id: "crop", label: "Generation получает файл кропа/страницы, не фразу «на картинке схема»", hint: "demo сохраняет или печатает путь к PNG. Открой файл: это та страница, не титул. В запрос модели вложено изображение." },
+  { id: "citation", label: "В ответе есть pdf, page и bbox (для v1 допустим bbox на всю страницу)", hint: "Без этого UI источника не собрать. Запиши структуру citation в коде один раз." },
+  { id: "logged", label: "Vision-вызов попал в logs/calls.jsonl с step generate (или аналог)", hint: "Не обходи log_call «чтобы быстрее». Токены vision должны быть видны." }
+]}>
+Сначала один визуальный вопрос руками (команда demo). Сравни text-only vs crop-in-vision на этом вопросе, запиши кто соврал. Полный эвал — следующая глава.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** на одном visual-вопросе ты видишь правильный кроп и ответ, который на него опирается.
+
+**Как проверить:** открытый PNG + текст ответа + строка лога. Не «модель что-то сказала».
+
+**Ещё рано, если:** в модель идёт только caption; кроп — случайная страница; fusion нет, только text retrieve.
+</Checkpoint>

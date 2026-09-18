@@ -1,0 +1,45 @@
+---
+interface Item {
+  id: string;
+  label: string;
+  hint?: string;
+}
+
+interface Props {
+  items: Item[];
+}
+
+const { items } = Astro.props;
+---
+
+<section class="not-prose my-6 border border-line px-4 py-4">
+  <p class="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Практика</p>
+  {
+    Astro.slots.has("default") && (
+      <div class="mb-4 space-y-2 font-serif text-[0.98rem] leading-relaxed text-ink [&_p]:my-0 [&_ul]:my-1 [&_ul]:list-disc [&_ul]:pl-5 [&_code]:font-mono [&_code]:text-[0.9em]">
+        <slot />
+      </div>
+    )
+  }
+  <ul class="space-y-3">
+    {
+      items.map((item) => (
+        <li>
+          <label class="flex cursor-pointer items-start gap-3 text-[0.98rem] leading-snug">
+            <input
+              type="checkbox"
+              data-checklist-item={item.id}
+              class="mt-1 size-3.5 shrink-0 appearance-none border border-muted bg-paper checked:border-accent checked:bg-accent"
+            />
+            <span>
+              <span class="block font-serif text-ink">{item.label}</span>
+              {item.hint ? (
+                <span class="mt-1 block font-serif text-[0.9rem] leading-relaxed text-muted">{item.hint}</span>
+              ) : null}
+            </span>
+          </label>
+        </li>
+      ))
+    }
+  </ul>
+</section>

@@ -1,0 +1,23 @@
+[project]
+name = "groundtruth"
+version = "0.1.0"
+description = "Legal research eval harness that fails CI on recall drop"
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", "eval*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

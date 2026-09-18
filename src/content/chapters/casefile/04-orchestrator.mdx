@@ -1,0 +1,59 @@
+---
+course: casefile
+order: 4
+title: Оркестратор
+summary: Сначала линейный FSM, потом ветка high-fraud → человек. Трасса вызовов.
+estMinutes: 35
+---
+
+Оркестратор не вызывает LLM «подумать, кому передать». Он — конечный автомат.
+
+Состояния: `intake → classify → fraud_check → (human_review | assess) → payout_gate → done | stopped`.
+
+<Scaffold path="projects/casefile/src/orchestrator.py">
+`run_claim(claim) -> Trace`. Оркестратор не вызывает LLM «подумать, кому передать» — это конечный автомат.
+
+**Состояния:** `intake → classify → fraud_check → (human_review | assess) → payout_gate → done | stopped`.
+
+**Что сделать:**
+- Сначала линейный путь без ветвлений на одной заявке (`CLM-001`).
+- Потом ветка: если `FraudResult.risk == high` или `send_to_human` — переход в HITL, assessor не зовём.
+- Trace — список шагов: агент, входной хендофф, выходной, токены, решение маршрута. Печать в CLI и файл `logs/traces/CLM-001.json` (имя = claim_id).
+- Вверху файла — ASCII или список переходов: это контракт маршрутизации.
+
+**Чего не делать:** не делай LLM-роутер. Не вызывай настоящий перевод денег — достаточно дойти до `payout_gate`. Не глотай шаги молча: нет шага в трассе — шага не было.
+</Scaffold>
+
+Порядок внедрения:
+
+1. Линейный путь без ветвлений.
+2. Если `FraudResult.risk == high` или `send_to_human` — переход в HITL, assessor не зовём.
+3. Печать трассы в CLI и в `logs/traces/{claim_id}.json`.
+
+<Command cwd="projects/casefile" title="Одна заявка через FSM" code={`python -c "from src.orchestrator import run_claim; run_claim('CLM-001')"`} />
+
+В выводе должны быть шаги и суммарный cost. Если шага не видно — трассы нет, эвал в главе 7 будет гаданием.
+
+<Action title="Нарисуй граф состояний в комментарии">
+Вверху `orchestrator.py` — ASCII или список переходов. Это контракт маршрутизации, его потом тестируют синтетические маршруты.
+</Action>
+
+<Trap title="LLM-роутер">
+«Пусть модель решит, кого вызвать следующим» — снова свободный текст на границе. Маршрут кодируй явно.
+</Trap>
+
+<Practice items={[
+  { id: "linear", label: "Линейный путь intake → classify → fraud_check → assess работает на одной чистой заявке", hint: "Команда run_claim('CLM-001') из главы. В выводе шаги по порядку. Если прыжок сразу в assess — FSM склеен. Пока без потолка и без настоящего payout." },
+  { id: "branch", label: "High-fraud (risk=high или send_to_human) уходит в human_review и не вызывает assessor", hint: "Возьми CLM-002 из example или фикстуру. В трассе нет шага assess. «Модель сама решила не слать» — это LLM-роутер, условие должно быть в коде оркестратора." },
+  { id: "trace", label: "Трасса пишется в JSON со всеми шагами, токенами и решением маршрута", hint: "Файл в logs/traces/ с именем claim_id. Открой JSON: from/to, tokens, cost. Если шага не видно — эвал в главе 7 будет гаданием. Печать в CLI тоже обязательна." }
+]}>
+Дописывай только `src/orchestrator.py`. Сначала линейный путь, потом одна ветка high-fraud. Cost ceiling и HITL-payout — следующие главы, не тащи их сюда целиком.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** по claim_id можно восстановить путь и развилку, не читая промпты.
+
+**Как проверить:** открой `logs/traces/CLM-001.json` и трассу фрод-заявки. Сравни с графом переходов вверху `orchestrator.py`. Команда `run_claim` печатает шаги и суммарный cost.
+
+**Ещё рано, если:** маршрутом рулит LLM; трассы нет, только print «готово»; high-fraud всё равно идёт в assessor.
+</Checkpoint>

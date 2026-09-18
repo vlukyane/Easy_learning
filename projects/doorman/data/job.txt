@@ -1,0 +1,2 @@
+Role: recruiting coordinator
+Need: backend engineer, Python, 3+ years, tests, communication.

@@ -1,0 +1,60 @@
+---
+course: casefile
+order: 8
+title: Закрытие
+summary: DoD, ловушки, что вынести в следующие темы.
+estMinutes: 15
+---
+
+Вернись к трём ловушкам плана и проверь, что ты в них не попал.
+
+<Trap title="Агенты общаются текстом">
+Хендофф — Pydantic. Если в трассе торчит сырой completion, контракт сломан.
+</Trap>
+
+<Trap title="Бюджет как украшение">
+Доля `stopped_cost_ceiling` > 0 на специально тяжёлых заявках.
+</Trap>
+
+<Trap title="Оркестрация ради оркестрации">
+У каждой роли свой запрет: intake не платит, assessor не аппрувит, payout без человека не существует.
+</Trap>
+
+<DoD>
+- Трасса любой заявки читается как дерево шагов.
+- Выплата выше порога физически невозможна без approval.
+- Есть средняя стоимость и доля упёршихся в потолок.
+</DoD>
+
+<Action title="Запиши три числа в README проекта">
+¢/claim, доля ceiling-stop, доля route-match. Без них Casefile не закрыт.
+</Action>
+
+Эти логи пригодятся Warmstart (кэш похожих нарративов — позже) и Groundtruth (гейт на инварианты). Пока не тащи кэш и CI сюда.
+
+<Scaffold path="projects/casefile/README.md">
+Новых модулей нет. Закрой пилот числами в этом README: центы на заявку, доля `stopped_cost_ceiling`, доля route-match.
+
+**Что сделать:**
+- Перенеси три числа из `logs/batch-summary.json`.
+- Прогони оба юнита без skip: `tests/test_handoff_schema.py` и `tests/test_no_payout_without_approval.py`.
+- Сверь DoD хаба со своей трассой: дерево шагов, выплата без approval невозможна, есть средняя стоимость и доля потолка.
+
+**Чего не делать:** не тащи сюда кэш (Warmstart) и CI-гейт (Groundtruth). Не закрывай курс «в памяти», если чисел нет в файле. Не оставляй сырой completion в трассе — это снова общение текстом.
+</Scaffold>
+
+<Practice items={[
+  { id: "readme-numbers", label: "В README проекта записаны центы на заявку, доля ceiling-stop и доля route-match", hint: "Три числа из батча, не ощущения. Если ceiling-share = 0 на тяжёлых заявках — вернись к главе 5. Файл projects/casefile/README.md, не чат." },
+  { id: "pytest-both", label: "Оба юнита зелёные без skip: схема хендоффа и payout без approval", hint: "pytest из корня projects/casefile. Файлы test_handoff_schema и test_no_payout_without_approval. Skip или переписанный assert — курс не закрыт." },
+  { id: "dod", label: "DoD хаба выполняется на моём прогоне: трасса-дерево, нет выплаты без approval, есть центы на заявку и доля потолка", hint: "Открой любую трассу как список шагов. Вызови execute_payout без флага — ошибка. Сводка батча лежит на диске." }
+]}>
+Отмечай по файлам и командам, не по настроению «курс прошёл». Логи пригодятся следующим темам — кэш и CI сюда не добавляй.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** три нуля и центы лежат в README и в `logs/batch-summary.json`, а не в памяти.
+
+**Как проверить:** открыть README — три числа; `pytest` без skip; одна трасса читается как дерево шагов; `execute_payout` без `approved` падает.
+
+**Ещё рано, если:** числа только в чате; skip на тестах; сырой completion в трассе; доля потолка равна нулю и тяжёлых заявок нет.
+</Checkpoint>

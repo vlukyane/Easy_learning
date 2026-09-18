@@ -1,0 +1,43 @@
+---
+course: vite
+order: 8
+title: Закрытие
+summary: build проходит, preview открывает доску, alias на месте.
+estMinutes: 15
+---
+
+Vite — ответ на «браузер не ест сырой JSX-граф». Dev — модули и скорость. Prod — папка `dist`. Alias — короткий путь. `VITE_` — сознательно публичные значения.
+
+Своими словами повтори: вход HTML, `src` vs `public`, preview не dev, HMR не вечен.
+
+<DoD>
+- `npm run build` без ошибок.
+- `preview` открывает доску.
+- Alias `@` указывает на `src`.
+</DoD>
+
+<Command cwd="projects/web/react" title="Финальный прогон" code={`npm run build
+npm run preview`} />
+
+Дальше Zustand: `npm install zustand` в этом же приложении.
+
+<Scaffold path="projects/web/react">
+Финальный прогон DoD в этой папке: `npm run build` без ошибок, `preview` открывает доску, в конфиге `@` → `src`.
+
+Не возвращайся к CRA. Не создавай новый проект «для продакшена» — dist уже ответ.
+</Scaffold>
+
+<Practice items={[
+  { id: "dod", label: "DoD хаба: зелёный build, preview с доской, alias @ на src", hint: "Три факта, не «вроде работало вчера». Если build красный — не закрывай главу." },
+  { id: "explain-vite-close", label: "Своими словами: почему alias и env существуют; dist можно выложить как статику", hint: "Повтори вход HTML, src vs public, preview не dev. Секретов в бандле нет." }
+]}>
+Чеклист закрытия темы. Zustand ставится сюда же следующей темой.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** Vite закрыт по DoD. CRA в истории курса больше не всплывает.
+
+**Как проверить:** две команды из блока выше. Доска в preview.
+
+**Ещё рано, если:** только dev; alias мёртвый; думаешь, что для хостинга нужен вечный npm run dev.
+</Checkpoint>

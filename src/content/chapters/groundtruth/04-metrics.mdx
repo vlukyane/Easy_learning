@@ -1,0 +1,47 @@
+---
+course: groundtruth
+order: 4
+title: Метрики
+summary: recall@k главная, precision@k и MRR для контекста.
+estMinutes: 25
+---
+
+<Scaffold path="projects/groundtruth/eval/metrics.py">
+Функции `recall_at_k`, `precision_at_k`, `mrr` в файле уже есть — разбери их построчно, не подменяй recall на «нашёлся ли хоть один документ» (это success@k; можно считать отдельно, не как главную).
+
+**Что дописать:** `evaluate(gold_path, split='dev')`. Читает JSONL, оставляет строки нужного split, для каждого запроса вызывает `retrieve(query, k=K)`, считает три метрики, возвращает словарь со **средним по запросам** (макро): ключи `recall`, `precision`, `mrr`, плюс `k` и `n_queries`.
+
+Не склеивай все relevant/retrieved всех запросов в две кучи и не считай одно пересечение на весь сплит — это микро, другая цифра. Без API и без LLM: метрика — пересечение множеств id. Пустой relevant → 0.0, как уже сделано в `recall_at_k`.
+</Scaffold>
+
+Recall@k = доля релевантных документов, попавших в top-k. Если у запроса 4 релевантных и в top-10 лежат 3, recall=0.75.
+
+Не подменяй это на «нашёлся ли хоть один» (это recall с бинарной релевантностью / success@k). Можешь считать success@k отдельно, не как главную.
+
+<Command cwd="projects/groundtruth" title="Посчитать dev" code={`python -c "from eval.metrics import evaluate; print(evaluate('eval/gold.jsonl', split='dev'))"`} />
+
+<Scaffold path="projects/groundtruth/tests/test_recall_gate.py">
+Юнит **без корпуса, без сети, без ключа API**: подставь крошечные списки retrieved/relevant. В файле уже есть `test_recall_partial` (4 релевантных, 2 в выдаче → 0.5) и `test_recall_none`.
+
+Допиши кейсы, если их мало: все релевантные в top-k → 1.0; `k` меньше длины retrieved — в расчёт идут только первые `k`; пустой retrieved → 0.0. Позже (главы 5–6) сюда же можно добавить сравнение «текущий recall vs baseline − epsilon», но сейчас достаточно формулы.
+
+Если тест вызывает живой `retrieve` по индексу — это уже не юнит формулы, вынеси отдельно.
+</Scaffold>
+
+<Command cwd="projects/groundtruth" title="Юнит метрик" code={`pytest tests/test_recall_gate.py -k recall`} />
+
+<Practice items={[
+  { id: "impl", label: "recall@k / precision@k / MRR реализованы без API", hint: "Три функции в eval/metrics.py считают пересечение id, не ходят в OpenAI. Не заменяй recall на «есть ли хотя бы один hit». success@k можно добавить рядом, но гейт будет смотреть на recall@k. Ручной пример главы: 4 релевантных, 3 в top-10 → 0.75." },
+  { id: "macro", label: "Отчёт — среднее по запросам, не микро по документам вперемешку", hint: "evaluate усредняет метрику по запросам: (r1+r2+…+rn)/n. Не складывай документы всех запросов в два огромных множества — запрос с 20 релевантными задавит запрос с одним. В словаре результата должны быть recall, precision, mrr, k, n_queries." },
+  { id: "dev-number", label: "Есть число recall@k на dev", hint: "Команда evaluate(..., split='dev') печатает число, не NotImplementedError. Запиши его — в следующей главе оно станет baseline. Прогон только на split=dev, held-out не трогай." }
+]}>
+Сначала формула на бумаге на одном запросе, потом `pytest`, потом `evaluate` на `dev`. Без живого API: это арифметика по id.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** формула recall@k покрыта юнитом и совпадает с ручным расчётом на одном запросе; `evaluate` выдаёт макро-среднее на `dev`.
+
+**Как проверить:** `pytest tests/test_recall_gate.py -k recall` зелёный. Возьми один gold-запрос, руками посчитай долю релевантных в top-k, сверь с `recall_at_k`. Прогон `evaluate` на `dev` печатает число, не исключение.
+
+**Ещё рано, если:** `evaluate` не реализован; среднее «по всем документам вперемешку»; юнит ходит в сеть или требует весь корпус; главной метрикой сделал success@k.
+</Checkpoint>

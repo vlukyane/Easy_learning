@@ -1,0 +1,79 @@
+---
+course: fieldnote
+order: 2
+title: Стенд
+summary: Python 3.12, venv, ключ Claude, JSONL-лог каждого вызова с первого дня.
+estMinutes: 25
+---
+
+Без лога токенов, латентности и стоимости проекты 3 и 4 из плана невозможны. Fieldnote — первое место, где этот рефлекс ставится.
+
+Начинай с самой дешёвой модели, которая проходит эвал: `claude-haiku-4-5-20251001`. Sonnet и Opus — только если Haiku не тянет vision-шаг.
+
+<Scaffold path="projects/fieldnote">
+Скелет уже в репозитории: `pyproject.toml`, `.env.example`, заготовки `src/`. Работай **только** здесь.
+
+**Что сделать:** Python 3.12 venv, `pip install -e ".[dev]"`, скопировать `.env` и вписать ключ. Не ставь LangChain и агентские фреймворки — они спрячут лог и стоимость.
+</Scaffold>
+
+## Окружение
+
+Рабочая директория всегда `projects/fieldnote`, если не сказано иначе.
+
+<Command cwd="projects/fieldnote" title="Создать venv и поставить зависимости" code={`python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"`} />
+
+<Command cwd="projects/fieldnote" title="Ключ API" code={`cp .env.example .env
+# впиши ANTHROPIC_API_KEY`} />
+
+`.env` не коммитится. В коде читай ключ через `os.environ`, не хардкодь.
+
+## Контракт лога
+
+Каждый вызов модели пишет одну JSON-строку:
+
+- `ts` — ISO-время
+- `model`
+- `step` — ingest_caption / retrieve / generate / eval
+- `input_preview` — обрезанный вход
+- `output_preview`
+- `input_tokens`, `output_tokens`
+- `latency_ms`
+- `cost_usd` — хотя бы грубая оценка по прайсу
+- `ok` / `error`
+
+<Scaffold path="projects/fieldnote/src/log.py">
+Допиши `log_call(...)`: одна JSON-строка в `logs/calls.jsonl` на каждый вызов модели. Поля как в контракте главы (ts, model, step, превью входа/выхода, токены, latency_ms, cost_usd, ok/error).
+
+`smoke()` — крошечный запрос к Haiku, печать ответа, запись в лог. Cost можно считать по простой таблице цен в коде.
+</Scaffold>
+
+<Command cwd="projects/fieldnote" title="Проверить Haiku и лог" code={`python -c "from src.log import smoke; smoke()"`} />
+
+Когда допишешь `smoke()`, команда должна: сделать крошечный запрос к Haiku, напечатать ответ и дописать строку в `logs/calls.jsonl`.
+
+<Action title="Открой JSONL глазами">
+После smoke-вызова открой `logs/calls.jsonl` и проверь, что поля на месте. Если поля нет — лог бесполезен, чини сразу.
+</Action>
+
+<Trap title="Лог потом">
+«Сначала заставлю RAG работать, лог добавлю позже» — классический путь к проекту без числа. Лог ставится до индекса.
+</Trap>
+
+<Practice items={[
+  { id: "venv", label: "venv на Python 3.12 создан, зависимости ставятся из pyproject.toml этой папки", hint: "source .venv/bin/activate, python -V → 3.12. pip install -e \".[dev]\" без глобального pip install в систему. Если 3.12 нет — поставь его, не молчи на 3.9." },
+  { id: "env", label: ".env с ANTHROPIC_API_KEY лежит локально и не попадает в git", hint: "cp .env.example .env. git status не показывает .env (он в gitignore). Ключ не хардкодь в py-файлах." },
+  { id: "smoke", label: "smoke() ходит в Haiku и дописывает строку в logs/calls.jsonl", hint: "Команда из главы. Если 401 — ключ. Если пустой лог — smoke не вызвал log_call. Модель по умолчанию — Haiku, не Opus." },
+  { id: "inspect-log", label: "В свежей строке лога есть model, tokens, latency_ms, cost_usd", hint: "Открой JSONL глазами. Нет поля — чини контракт сразу, не «потом». input_preview обрезан, не клади весь PDF в лог." }
+]}>
+Стенд ставится до индекса. Если лог «потом» — главы про стоимость и эвал будут пустыми. После smoke открой файл лога, не верь только print.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** пробный вызов Haiku залогирован в JSONL со всеми обязательными полями.
+
+**Как проверить:** cat logs/calls.jsonl — одна новая строка, поля на месте, ключ не в git.
+
+**Ещё рано, если:** нет venv; лог пишешь print-ами в консоль; ставишь LangChain; smoke без записи файла.
+</Checkpoint>

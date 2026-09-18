@@ -1,0 +1,110 @@
+---
+course: js
+order: 2
+title: Стенд Node и nvm
+summary: Установка Node 22 через nvm. PATH. Проверка версий.
+estMinutes: 45
+---
+
+Vite и npm появятся в React, но Node нужен уже сейчас: запускать мелкие скрипты и позже `npx`. Ставим **nvm**, не случайный Node с сайта «кнопкой».
+
+macOS + zsh.
+
+## Что это
+
+**Node.js** — **рантайм**: машина, которая выполняет JavaScript **вне браузера**. Браузер нужен, чтобы показать страницу. Node нужен, чтобы крутить **инструменты**: npm, Vite, скрипты сборки, учебный `hello.js`. Это не замена Chrome и не «сервер сам по себе» — это программа `node` в терминале.
+
+**npm** — две вещи сразу: **реестр** готовых пакетов в интернете и **программа**, которая скачивает их в папку `node_modules` и записывает версии в `package.json`. Пока мы только проверяем, что `npm -v` есть.
+
+**nvm** — переключатель версий Node. Проект А хочет 18, проект Б — 22. Без nvm глобальный Node с сайта дерётся с Homebrew-Node, и «у меня работало» ломается на другой машине.
+
+**PATH** — где оболочка ищет `node` и `npm`. nvm подменяет путь, когда ты делаешь `nvm use 22`. Старый таб терминала про это не знает.
+
+`node file.js` выполняет файл в Node: есть `console` и `process`, нет страницы, нет кликов, нет `document`.
+
+## Зачем
+
+Без Node не будет Vite и `npm create`. Без nvm через полгода всплывёт Node 14 «откуда-то» и установка курса разъедется. Боль без этого: «command not found: npm» или «несовместимый движок» на пакете, который ждёт 22.
+
+## Как работает
+
+Ставишь nvm → он дописывает загрузку в `~/.zshrc` → **новый** таб поднимает nvm → `nvm install 22` качает бинарник Node в домашнюю папку nvm, не в `/usr` системы → `nvm use 22` ставит этот бинарник первым в PATH этой сессии.
+
+`.nvmrc` с текстом `22` — записка для папки: `nvm use` без номера читает файл.
+
+## 1. Есть ли nvm
+
+<Command cwd="~" title="Проверка nvm" code={`command -v nvm || echo "nvm not found"
+node -v 2>/dev/null || echo "no node"`} />
+
+Если `nvm` есть — переходи к `nvm install 22`. Если Node без nvm (Homebrew) — всё равно поставь nvm: так не сломаешь системный Python/браузер.
+
+## 2. Установка nvm
+
+<Command cwd="~" title="Скрипт nvm" code={`curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash`} />
+
+Скрипт допишет строки в `~/.zshrc`. **Закрой терминал полностью** и открой снова. Либо:
+
+<Command cwd="~" title="Подхватить nvm в текущей сессии" code={`export NVM_DIR="$HOME/.nvm"
+. "$NVM_DIR/nvm.sh"
+nvm --version`} />
+
+Ожидание: номер версии nvm, не `command not found`.
+
+Типичная поломка: открыт старый таб терминала без нового `.zshrc`. Новый таб.
+
+## 3. Node 22
+
+<Command cwd="~" title="Поставить и включить Node 22" code={`nvm install 22
+nvm use 22
+node -v
+npm -v`} />
+
+Ожидание: `v22.…` и версия npm (обычно 10+).
+
+В корне этого репозитория уже есть `.nvmrc` с `22`. Для папки js:
+
+<Command cwd="projects/web/js" title="Локальный .nvmrc" code={`echo "22" > .nvmrc
+nvm use`} />
+
+`nvm use` без номера читает `.nvmrc`.
+
+## 4. Два запуска
+
+<Command cwd="projects/web/js" title="Node без DOM" code={`echo 'console.log("node ok", process.version)' > hello.js
+node hello.js`} />
+
+Ожидание: `node ok v22…`
+
+Браузерный файл так не проверяют.
+
+### Linux / Windows
+
+- Linux: тот же install.sh, bash/zsh.
+- Windows: [nvm-windows](https://github.com/coreybutler/nvm-windows) — другой бинарь, команды `nvm install 22` похожи. Не мешай его с WSL-nvm: выбери одну среду.
+
+Vite в этой главе не создаём.
+
+<Scaffold path="projects/web/js">
+Здесь появятся `.nvmrc` и учебный `hello.js`. Это **не** папка React и не глобальная установка Node «для всей macOS».
+
+После `nvm install 22` всегда открывай **новый** таб терминала (или `source ~/.zshrc`), иначе `nvm` «не найден».
+</Scaffold>
+
+<Practice items={[
+  { id: "nvm-ver", label: "nvm --version работает в новом окне терминала", hint: "Закрой терминал полностью, открой снова. Если command not found — строки nvm не попали в ~/.zshrc или это старый таб. Не ставь второй Node с сайта «кнопкой» поверх." },
+  { id: "node22", label: "node -v показывает v22.x", hint: "nvm use 22 перед проверкой. Если v14 или v18 без nvm — ты смотришь системный Node. nvm use должен переключить. npm -v тоже должен ответить." },
+  { id: "hello", label: "node hello.js печатает process.version", hint: "Файл в projects/web/js, команда из этой папки. В выводе node ok и v22. Это проверка Node, не страницы. Браузерный board.js так не запускай." },
+  { id: "nvmrc", label: "В projects/web/js лежит .nvmrc с одной строкой 22", hint: "cat .nvmrc. Потом nvm use без номера должен прочитать файл. Не JSON, не кавычки — просто 22." },
+  { id: "explain-node", label: "Своими словами: Node, npm, nvm, PATH, почему node file.js — не страница", hint: "Node — рантайм вне браузера. npm ставит пакеты в проект. nvm переключает версии. PATH — где оболочка ищет node." }
+]}>
+Иди по командам сверху вниз. После install.sh — новый терминал, иначе останешься без nvm. Vite и `npm create` в этой главе не трогай.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** в свежей вкладке `nvm --version` и `node -v` → v22, учебный hello.js печатает версию.
+
+**Как проверить:** новое окно → nvm use 22 → node -v. Не из того таба, где только что ставил, если там ещё «not found».
+
+**Ещё рано, если:** Node с brew/сайта без nvm и ты не уверен, какой бинарь в PATH; `document` в hello.js; уже создаёшь Vite.
+</Checkpoint>

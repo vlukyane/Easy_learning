@@ -1,0 +1,22 @@
+---
+import { chapterHref, chapterSlug, getChapters, getCourse, getCourses } from "../../../lib/content";
+
+export async function getStaticPaths() {
+  const courses = await getCourses();
+  const paths = [];
+  for (const course of courses) {
+    const chapters = await getChapters(course.id);
+    for (const chapter of chapters) {
+      paths.push({
+        params: { course: course.id, chapter: chapterSlug(chapter) },
+      });
+    }
+  }
+  return paths;
+}
+
+const { course: courseSlug, chapter: chapterParam } = Astro.params;
+const course = await getCourse(courseSlug!);
+if (!course) throw new Error(`Unknown course: ${courseSlug}`);
+return Astro.redirect(chapterHref(course.data.section, course.id, chapterParam!), 301);
+---

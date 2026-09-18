@@ -1,0 +1,47 @@
+---
+course: groundtruth
+order: 6
+title: CI-гейт
+summary: Job падает, если recall < baseline − ε.
+estMinutes: 30
+---
+
+<Scaffold path="projects/groundtruth/scripts/ci_eval.py">
+Скрипт уже читает `eval/baseline.json`, вызывает `evaluate(..., split=GATE_SPLIT)` и ставит exit 1, если текущий recall меньше `baseline.recall` минус `EPSILON`. Твоя задача — чтобы это **исполнялось по-настоящему**, а не падало на `NotImplementedError` или отсутствии `gold.jsonl`.
+
+**Что довести.** Короткая таблица в stdout: recall / precision / mrr, current vs baseline, split, k, n_queries. Последняя строка машиночитаемая: `GATE_OK recall=... baseline=... eps=... split=...` или `GATE_FAIL ...`. Отсутствующий gold — тоже FAIL с понятным текстом, не стек на полэкрана без вывода.
+
+Запускай из `projects/groundtruth`. Определение гейта — ненулевой **exit code**, не «я посмотрел JSON». YAML ниже только вызывает этот файл.
+</Scaffold>
+
+<Scaffold path="projects/groundtruth/.github/workflows/eval.yml">
+Шаблон уже в репо — проверь, не выдумывай с нуля: checkout, Python 3.12, `pip install -e ".[dev]"` в каталоге `projects/groundtruth`, затем `python scripts/ci_eval.py`.
+
+Триггер — `pull_request` (и push в `main`, если так удобно). `working-directory` обязан указывать на пилот, иначе Action не найдёт скрипт. Если GitHub remote нет — это нормально для учебного DoD: локальный прогон обязателен, YAML — чтобы было что включить на remote.
+</Scaffold>
+
+Если GitHub remote нет — гейт всё равно должен быть исполняемым локально. Именно `ci_eval.py` есть определение гейта; YAML — обёртка.
+
+<Command cwd="projects/groundtruth" title="Локальный гейт" code={`python scripts/ci_eval.py; echo exit:$?`} />
+
+На текущем коде ожидай exit 0 (равен baseline). Следующая глава специально сломает retrieval.
+
+<Action title="Сделай вывод машиночитаемым">
+Последняя строка stdout: `GATE_FAIL recall=0.41 baseline=0.50 eps=0.01` или `GATE_OK`. Удобно для логов CI.
+</Action>
+
+<Practice items={[
+  { id: "script", label: "scripts/ci_eval.py сравнивает с baseline и ставит exit code", hint: "Запусти python scripts/ci_eval.py; echo exit:$? . Скрипт не спрашивает «продолжить?» в stdin. Exit 1 — если просели ниже baseline − EPSILON, нет gold или evaluate не готов. Последняя строка stdout — GATE_OK или GATE_FAIL с числами." },
+  { id: "workflow", label: "Шаблон GitHub Action лежит в .github/workflows/eval.yml", hint: "Файл существует и вызывает именно scripts/ci_eval.py на Python 3.12 из каталога пилота. Не обязательно, чтобы job уже бежал на GitHub, если remote нет — но шаблон не должен быть echo hello." },
+  { id: "local-ok", label: "На текущем индексе локальный прогон зелёный", hint: "Пока retrieval не ломали, ожидай exit 0 и recall ≈ baseline. Если зелёный потому что baseline всё ещё нули и запросов 0 — это фальшивый успех, вернись к главам 3–5. Следующая глава специально сломает поиск." }
+]}>
+На текущем коде ожидай exit 0. Если красный — сначала чини `evaluate` / gold / `k`, не подкручивай baseline. Гейт должен работать локально даже без GitHub.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** красный/зелёный определяется скриптом (exit code), а не человеком, смотрящим на JSON.
+
+**Как проверить:** `python scripts/ci_eval.py; echo exit:$?` → 0 на текущем коде. В выводе есть `GATE_OK`, split и числа. В `eval.yml` последний шаг — этот скрипт, не один только pytest.
+
+**Ещё рано, если:** гейт «глазами»; `ci_eval` падает на `NotImplementedError`; YAML есть, локально скрипт не запускал; зелёный из-за нулевого baseline без запросов.
+</Checkpoint>

@@ -1,0 +1,79 @@
+---
+course: react
+order: 2
+title: Стенд Vite + React
+summary: create vite, npm install, npm run dev. Пакеты в node_modules, не «в систему».
+estMinutes: 38
+---
+
+Нужен Node 22 из темы JS. Папка `projects/web/react` в скелете почти пустая — **не клади свой index.html заранее**, `create` ругнётся на непустой каталог. Если там только README и `.gitkeep` — удали лишнее или создай в чистой подпапке и перенеси.
+
+macOS, zsh, уже `nvm use 22`.
+
+## Что это
+
+**`npm create vite@latest`** — не «магия установки React в систему». Это команда, которая **копирует шаблон** проекта в папку: HTML-вход, `src/`, конфиг Vite, **`package.json`** со списком зависимостей.
+
+**Зависимость** — чужой пакет, без которого проект не собирается (`react`, `vite`). **`node_modules`** — папка, куда npm **скачал** эти пакеты. Её не коммитят целиком в учебном хаосе можно, но смысл: это локальная копия, не глобальная установка в macOS.
+
+**`npm run dev`** запускает **процесс**: Vite поднимает HTTP-сервер на `localhost`. Браузер ходит на URL, как на сайт. Это **не** `open index.html`. JSX и `import` с диска «как есть» браузер из `file://` не переварит удобно — сервер отдаёт преобразованные модули.
+
+## Зачем
+
+HTML-визитка открывалась файлом. React-приложение — граф файлов с JSX. Без dev-сервера увидишь пустоту или ошибку модулей. Без локального `node_modules` команда `npm run dev` скажет, что пакетов нет.
+
+## Как работает
+
+`package.json` → секция `"scripts"` → ключ `"dev"` → обычно `vite`. npm запускает бинарь из `node_modules/.bin`. Vite смотрит `index.html`, находит `<script type="module" src="/src/main.jsx">`, отдаёт браузеру уже понятный JS. Сохранил файл — **HMR** подменит модуль, часто без полной перезагрузки.
+
+<Command cwd="projects/web/react" title="Создать приложение (JS-шаблон)" code={`nvm use 22
+npm create vite@latest . -- --template react`} />
+
+Если «directory is not empty» — либо согласись перезаписать, либо:
+
+<Command cwd="projects/web" title="Чистый каталог, если create ругается" code={`npm create vite@latest study-board -- --template react
+# затем работай в study-board или скопируй файлы в react/`} />
+
+<Command cwd="projects/web/react" title="Установка зависимостей и dev-сервер" code={`npm install
+npm run dev`} />
+
+Ожидание: URL `http://localhost:5173/`. Открой в Chrome. Это **не** `file://`. HMR обновляет страницу при сохранении.
+
+`npm install` качает пакеты **в `./node_modules` этой папки**. Глобальный `npm install -g create-react-app` не нужен и вреден. Create React App не используем.
+
+Остановка сервера: `Ctrl+C`.
+
+Порт занят:
+
+<Command cwd="projects/web/react" title="Другой порт" code={`npx vite --port 5174`} />
+
+или в `package.json` уже будет скрипт `dev` — флаги разберёшь в теме Vite.
+
+### Linux / Windows
+
+Те же npm-команды. Windows: выполняй в том же окружении, где `nvm use 22` (PowerShell или WSL, не смешивай).
+
+<Scaffold path="projects/web/react">
+Каталог должен быть почти пустым перед `npm create vite@latest . -- --template react`. Если create ругается — подпапка study-board, как в команде выше.
+
+После create: `npm install` (появится `node_modules` **здесь**) и `npm run dev`. В Chrome открой URL из терминала (`http://localhost:5173`), не `open index.html`.
+
+Шаблон **react**, не react-ts. Create React App не используем.
+</Scaffold>
+
+<Practice items={[
+  { id: "create", label: "Шаблон Vite + React (JS) лежит в projects/web/react", hint: "Есть package.json со скриптом dev, src/main.jsx или main.js, index.html в корне приложения. Нет tsconfig «из react-ts», если не ставил его сам." },
+  { id: "dev", label: "npm run dev открывает стартовый экран Vite в Chrome по http://localhost:…", hint: "nvm use 22 в этом табе. Адрес не file://. Остановка — Ctrl+C. Если порт занят — 5174, как в команде главы." },
+  { id: "local-nm", label: "node_modules лежит в папке react, не в домашней директории и не глобально", hint: "ls projects/web/react/node_modules. Глобальный npm install -g create-react-app не нужен. Пакеты проекта локальные." },
+  { id: "explain-setup", label: "Своими словами: create копирует шаблон; npm install качает зависимости; dev — HTTP-процесс", hint: "Это не open файла. JSX с диска браузер сам не переварит. node_modules не «установка React в macOS»." }
+]}>
+Иди строго по командам. После create не редактируй доску — сначала должен гореть стартовый Vite. Если directory is not empty — не затирай всё подряд, используй чистую подпапку.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** localhost показывает стартовый экран Vite+React, node_modules локальный, шаблон JS.
+
+**Как проверить:** адресная строка http://localhost:…, в терминале процесс dev живой.
+
+**Ещё рано, если:** открыл index.html с диска; поставил CRA; шаблон TypeScript вопреки курсу; npm install в другой папке.
+</Checkpoint>

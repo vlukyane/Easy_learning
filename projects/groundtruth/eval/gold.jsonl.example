@@ -1,0 +1,2 @@
+{"qid": "q1", "query": "duty to warn in product liability for a manufacturer", "relevant_ids": ["doc-001", "doc-014"], "split": "dev"}
+{"qid": "q2", "query": "statute of limitations for written contract claims", "relevant_ids": ["doc-007"], "split": "heldout"}

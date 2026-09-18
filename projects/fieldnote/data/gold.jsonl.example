@@ -1,0 +1,2 @@
+{"id": "q001", "question": "What is the warranty period stated in the text?", "kind": "text", "pdf": "example-manual.pdf", "page": 3, "answer": "24 months", "notes": ""}
+{"id": "q002", "question": "On the wiring diagram, which terminal is 24V?", "kind": "visual", "pdf": "example-manual.pdf", "page": 12, "answer": "X2-3", "notes": "answer lives in the diagram, not the caption"}

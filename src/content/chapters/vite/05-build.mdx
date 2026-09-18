@@ -1,0 +1,54 @@
+---
+course: vite
+order: 5
+title: Сборка и preview
+summary: outDir, preview, как читать ошибки бандла.
+estMinutes: 30
+---
+
+## Что это
+
+**`dist`** — статическая папка: `index.html` + JS/CSS с хешами. Её можно положить на **любой** хостинг статики (GitHub Pages, Netlify, обычный nginx). Сервера Node на проде для этой доски нет.
+
+**`npm run preview`** — локально раздать **уже собранное**, как хостинг. Это **не** dev: нет HMR, нет преобразования JSX на лету — только файлы из `dist`. Нужно, чтобы поймать баги бандла до выкладки.
+
+## Зачем
+
+Dev прощает относительный import без расширения или смешение default/named — прод падает. Без `build` ты не знаешь, уедет ли доска на хостинг. Без `preview` открываешь `dist/index.html` как `file://` и ломаешь пути `/assets/…`.
+
+## Как работает
+
+<Command cwd="projects/web/react" title="Production-сборка и локальный просмотр" code={`nvm use 22
+npm run build
+npm run preview`} />
+
+`build` пишет в `dist/`. Ошибки «не нашлось .jsx» часто всплывают только здесь (неверный путь, смесь default/named export).
+
+Очистка кэша Vite, если dev «залип»:
+
+<Command cwd="projects/web/react" title="Сброс кэша" code={`rm -rf node_modules/.vite
+npm run dev`} />
+
+Не коммить `dist/` без нужды. Для проверки DoD dist достаточно локально.
+
+<Scaffold path="projects/web/react/dist">
+Папка появится после `npm run build`. Не редактируй её руками — она перезапишется. `npm run preview` раздаёт **это**, не HMR.
+
+Сравни: dev на 5173 vs preview (часто 4173). Доска должна быть той же. Ошибка пути/export часто всплывает только здесь.
+</Scaffold>
+
+<Practice items={[
+  { id: "build", label: "npm run build завершается кодом 0, в dist появляются html/js/css", hint: "nvm use 22. Если красный лог про не найденный модуль — чини import, не «ещё раз dev». ls dist после успеха." },
+  { id: "preview", label: "npm run preview открывает ту же доску, что dev, но без HMR", hint: "Сохрани файл во время preview — экран не обязан обновиться. Это проверка бандла, как на хостинге. Не open dist/index.html через file://." },
+  { id: "explain-build", label: "Своими словами: dist — статика на любой хостинг; preview не dev", hint: "Сервера Node на проде для этой доски нет. Можно положить dist на Pages/Netlify. Кэш Vite сбрасывается удалением node_modules/.vite." }
+]}>
+Сначала зелёный build, потом preview. Если preview пустой — смотри базовый путь и консоль браузера.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** build зелёный, preview показывает доску.
+
+**Как проверить:** exit code 0, URL preview в терминале, карточки на месте.
+
+**Ещё рано, если:** проверял только dev; открыл dist как файл с диска; build красный, но «в dev же работает».
+</Checkpoint>

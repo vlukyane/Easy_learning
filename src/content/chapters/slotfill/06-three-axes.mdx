@@ -1,0 +1,39 @@
+---
+course: slotfill
+order: 6
+title: Три оси
+summary: Accuracy, $/1000 docs, латентность. Заполнить results/table.md.
+estMinutes: 20
+---
+
+<Scaffold path="projects/slotfill/results/table.md">
+Строки A / B. Колонки: field-level, exact-doc, USD/1000, p50 latency, p95 latency.
+</Scaffold>
+
+Стоимость A — сумма logged cost на test, нормированная на 1000. Стоимость B — инференс (железо/API) + амортизация обучения, если хочешь честности на малом объёме; **подпиши**, включена ли тренировка. Два варианта таблицы: «только инференс» и «инференс + train/N_years» — лучше, чем молчание.
+
+<Command cwd="projects/slotfill" title="Собрать таблицу" code={`python -c "from src.eval.benchmark import write_table; write_table()"`} />
+
+<Metric>
+Три оси обязательны. Accuracy без денег и латентности не отвечает на вопрос «что выбрать».
+</Metric>
+
+<Practice items={[
+  { id: "table", label: "results/table.md заполнен числами, не прочерками", hint: "Строки A и B. Столбцы: качество (field / exact), $, латентность. Источник — harness, не оценка «на глаз»." },
+  { id: "cost-note", label: "Подписано, входит ли обучение LoRA в стоимость B", hint: "Одна сноска. Иначе $ несравнимы. Если не входит — скажи «только инференс»." },
+  { id: "latency", label: "Есть хотя бы p50 по A и B на том же железе/прогоне", hint: "Из лога latency. Не путай с training time. p95 бонус." }
+]}>
+Таблица должна читаться без тебя. Три оси, две системы.
+</Practice>
+
+<Scaffold path="projects/slotfill/results/table.md">
+Сгенерируй из JSON harness или заполни вручную из него, не из памяти. Прочерки только если железо заблокировало B — и это написано.
+</Scaffold>
+
+<Checkpoint>
+**Готово, когда:** таблица читается без устных пояснений.
+
+**Как проверить:** открой table.md чужими глазами. Есть $ сноска и latency.
+
+**Ещё рано, если:** только accuracy; B пустой без пометки; цифры из val.
+</Checkpoint>

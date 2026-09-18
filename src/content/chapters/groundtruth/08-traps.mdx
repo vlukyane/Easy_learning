@@ -1,0 +1,56 @@
+---
+course: groundtruth
+order: 8
+title: Ловушки и закрытие
+summary: Подгонка под тест, флаки, LLM-as-judge. DoD.
+estMinutes: 18
+---
+
+<Trap title="Оптимизация под тест">
+Тюнингуй только `split=dev`. Held-out — один раз в конце. Если held-out просел, а dev вырос — ты подогнался.
+</Trap>
+
+<Trap title="Флаки-эвал">
+Недетерминированный LLM в retrieval/rerank делает гейт лотереей. Снижай температуру, фиксируй индекс, ставь epsilon, усредняй только если понимаешь дисперсию.
+</Trap>
+
+<Trap title="LLM-as-judge без калибровки">
+Если добавишь судью на «релевантность», измерь agreement с ручной разметкой. В пилоте лучше оставить set-пересечение id.
+</Trap>
+
+<DoD>
+- Золото и baseline в репо.
+- Гейт блокирует регресс (продемонстрировано).
+</DoD>
+
+<Action title="Прогони held-out один раз">
+Запиши recall@k held-out рядом с dev в README. Не копируй его в baseline, если гейт сидит на dev — подпиши, на каком сплите CI.
+</Action>
+
+<Scaffold path="projects/groundtruth/src/constants.py">
+Здесь уже есть `GATE_SPLIT = "dev"`. `scripts/ci_eval.py` должен импортировать константу и передавать её в `evaluate(..., split=GATE_SPLIT)` — не хардкодь `"dev"` в трёх местах и не гейти held-out.
+
+**Held-out один раз.** Прогони `evaluate` со `split='heldout'`, запиши recall@k рядом с dev в README или `logs/heldout.json`. Это число **не** копируй в `baseline.json`, если CI сидит на dev: иначе завтра подгонишь baseline под held-out.
+
+Если held-out заметно хуже dev после тюнинга — ты оптимизировался под тест. Не лечи это подстановкой held-out в гейт; вернись к разметке или модели честно.
+</Scaffold>
+
+<Scaffold path="projects/groundtruth/README.md">
+Коротко зафиксируй закрытие пилота: какой split в CI, числа dev и held-out, `k`, `EPSILON`, команда `python scripts/ci_eval.py`. Это закрывает DoD хаба: золото и baseline в репо, гейт продемонстрирован (артефакты главы 7).
+</Scaffold>
+
+<Practice items={[
+  { id: "heldout", label: "Held-out посчитан отдельно и не мешался в подбор", hint: "evaluate на split=heldout один раз, число записано отдельно от dev. Пока считал held-out, не меняй BM25 и чанки «чтобы дотянуть». Если held-out просел, а dev вырос — так и напиши в README, не переразмечай held-out под систему." },
+  { id: "split-in-ci", label: "В ci_eval явно указано, какой split гейтится", hint: "В выводе уже должен быть split=... (скрипт печатает GATE_SPLIT). Открой constants.py: гейт на dev. Если гейтишь all или heldout — подгонка встроилась в CI." },
+  { id: "dod", label: "DoD хаба выполняется", hint: "Золото и baseline в репо; гейт блокирует регресс (есть red/green артефакты главы 7). Без LLM-судьи, если не калибровал agreement с ручной разметкой. Можно закрывать хаб курса." }
+]}>
+Held-out — финальный замер, не ручка тюнинга. Сверь DoD хаба: золото, baseline, красный регресс уже был в прошлой главе.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** регресс retrieval красный (уже показан), held-out посчитан отдельно и не растрачен на тюнинг, в CI явно указан split.
+
+**Как проверить:** README или лог с двумя числами (dev / held-out); `ci_eval` печатает `split=dev`; baseline не перезаписан цифрой held-out; DoD хаба выполнен.
+
+**Ещё рано, если:** held-out мешался в подбор k/чанкера; в CI не видно, какой split; baseline руками поднят после held-out; нет доказательства красного гейта; золота нет в репо.
+</Checkpoint>

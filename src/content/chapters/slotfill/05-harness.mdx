@@ -1,0 +1,46 @@
+---
+course: slotfill
+order: 5
+title: Одинаковый harness
+summary: Те же поля, тот же парсер, тот же test.
+estMinutes: 25
+---
+
+<Scaffold path="projects/slotfill/src/eval/benchmark.py">
+Гоняет A и B по test. Считает field-level accuracy (микро по полям и макро по документам / exact-match документа).
+</Scaffold>
+
+Правила честности:
+
+- Один `test` список id.
+- Один парсер JSON → схема.
+- Пустое поле = ошибка, не «пропуск».
+- Line items сравнивай нормализованно (сортировка, decimal).
+
+<Command cwd="projects/slotfill" title="Harness на test" code={`python -c "from src.eval.benchmark import main; main()"`} />
+
+Не смотри результаты по полям и не возвращайся крутить промпт/LoRA «на пять минут». Это уже подгонка. Зафиксируй цифры.
+
+<Trap title="Сравнение несравнимого">
+Разный постпроцессинг, разный test, разная схема полей — таблица врёт.
+</Trap>
+
+<Practice items={[
+  { id: "one-test", label: "A и B прогнаны по одному splits.test, не по разным выборкам", hint: "Один список id. Повторный прогон тех же id. Не «A на val, B на test»." },
+  { id: "one-parser", label: "Общий парсер выхода для A и B", hint: "Одна функция. Разный parse = несравнимые exact-match." },
+  { id: "metrics", label: "Считаются field-level и exact-match всего документа", hint: "Не только «почти угадал». Поле ошибочно / документ целиком верный. Формулы в коде harness." }
+]}>
+Один harness-скрипт, два backend. Правила скоринга не копипастить в train.py.
+</Practice>
+
+<Scaffold path="projects/slotfill/src/harness.py">
+load test ids → run A/B → parse → metrics → JSON. Никаких разных «чуть-чуть» условий успеха.
+</Scaffold>
+
+<Checkpoint>
+**Готово, когда:** harness один, а не два скрипта с разными правилами.
+
+**Как проверить:** один вызов считает A и B. Метрики на том же test.
+
+**Ещё рано, если:** два ноутбука; разный parse; test перемешан с val.
+</Checkpoint>

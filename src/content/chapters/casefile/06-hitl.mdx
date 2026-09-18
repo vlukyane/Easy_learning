@@ -1,0 +1,55 @@
+---
+course: casefile
+order: 6
+title: HITL payout
+summary: Выплата выше порога физически невозможна без флага человека.
+estMinutes: 30
+---
+
+Payout — не ещё один LLM-шаг. Это функция, которая принимает `Assessment` и `Approval`.
+
+<Scaffold path="projects/casefile/src/hitl.py">
+`request_approval(assessment) -> PayoutDecision`. В учебной CLI — `input()`: да/нет и имя аппрувера. Нет ответа человека — `approved=False`, вызова `execute_payout` нет.
+
+**Что сделать:** зафиксируй константу `PAYOUT_HUMAN_THRESHOLD` (в `.env.example` уже есть). В учебной версии безопаснее требовать человека всегда (`0` = любой amount). Отказ пиши в трассу как `payout_denied_by_human`.
+
+**Чего не делать:** не давай агенту инструмент `approve`. Approve — только оркестратор после человека. Не пропускай шаг молча, если человек отказал.
+</Scaffold>
+
+<Scaffold path="projects/casefile/src/payout.py">
+`execute_payout(decision)` — не LLM-шаг, обычная функция. Проверяет `approved is True` и `amount` по политике (`<= assessment.recommended_payout` или явный порог). Иначе исключение.
+
+**Что сделать:** без `approved=True` — `PermissionError` (скелет уже так делает, не снимай проверку). После флага — запись в учебный ledger (файл или список), не реальные деньги.
+
+**Чего не делать:** не вызывай `execute_payout` из агента assessor. Не обходи гейт из REPL «просто чтобы проверить сумму».
+</Scaffold>
+
+Правило пилота: **любая** выплата требует человека, либо выплата выше порога (например $1000). Выбери одно и зафиксируй в коде константой `PAYOUT_HUMAN_THRESHOLD`. План говорит: «a human before any payout» — в учебной версии безопаснее требовать человека всегда, порог оставить для ветки «auto-deny vs ask».
+
+<Command cwd="projects/casefile" title="Юнит: нет approval — нет денег" code={`pytest tests/test_no_payout_without_approval.py`} />
+
+Тест не зовёт API: напрямую `execute_payout` без approval должен падать. Сними `skip`, когда функция настоящая.
+
+<Action title="Проиграй CLI-гейт">
+Прогони одну заявку до payout и откажись в `input()`. Убедись, что в трассе `payout_denied_by_human`, а не тихий пропуск шага.
+</Action>
+
+<Trap title="Модель сама себе аппрувит">
+Не давай агенту инструмент `approve`. Approve — только оркестратор после человека.
+</Trap>
+
+<Practice items={[
+  { id: "gate", label: "execute_payout без approved=True бросает PermissionError — даже если вызвать из REPL", hint: "Собери PayoutDecision(approved=False) руками и вызови функцию. Успешный return без флага — дыра. Сумма в решении не аппрувит сама себя." },
+  { id: "pytest-hitl", label: "pytest tests/test_no_payout_without_approval.py зелёный без живого API", hint: "Тест не ходит в Claude. Если skip — сними skip. Не правь тест так, чтобы approved=False проходил. Каталог projects/casefile." },
+  { id: "cli", label: "В CLI отказ человека виден в трассе как payout_denied_by_human, а не тихий пропуск шага", hint: "Прогони одну заявку до payout_gate, ответь «нет» в input(). Открой JSON трассы: статус отказа, execute_payout не вызывался." }
+]}>
+Работай в `hitl.py` и `payout.py`, затем воткни гейт в оркестратор на состоянии `payout_gate`. Агентам инструмент `approve` не давай.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** обойти выплату без флага человека нельзя даже из REPL.
+
+**Как проверить:** pytest из главы + ручной вызов `execute_payout` с `approved=False` + один CLI-отказ, сохранённый в трассе.
+
+**Ещё рано, если:** модель «аппрувит» в промпте; отказ человека не попадает в trace; тест skip или переписан.
+</Checkpoint>

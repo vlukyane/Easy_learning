@@ -1,0 +1,25 @@
+[project]
+name = "casefile"
+version = "0.1.0"
+description = "Typed multi-agent insurance triage (scaffold)"
+requires-python = ">=3.12"
+dependencies = [
+  "anthropic",
+  "pydantic>=2",
+  "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

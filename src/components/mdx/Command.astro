@@ -1,0 +1,29 @@
+---
+interface Props {
+  cwd?: string;
+  title?: string;
+  code: string;
+}
+const { cwd, title, code } = Astro.props;
+---
+
+<figure class="not-prose my-5 border border-line bg-raised" data-command>
+  <figcaption class="flex items-center justify-between gap-3 border-b border-line px-3 py-2">
+    <div class="min-w-0">
+      {title && <p class="truncate font-sans text-sm text-ink">{title}</p>}
+      {cwd && (
+        <p class="truncate font-mono text-[11px] text-faint">
+          {cwd}
+        </p>
+      )}
+    </div>
+    <button
+      type="button"
+      data-copy
+      class="shrink-0 font-mono text-[11px] uppercase tracking-[0.12em] text-muted hover:text-accent"
+    >
+      Копировать
+    </button>
+  </figcaption>
+  <pre class="overflow-x-auto p-3 font-mono text-[12.5px] leading-relaxed text-ink"><code>{code.replace(/^\n/, "").replace(/\n$/, "")}</code></pre>
+</figure>

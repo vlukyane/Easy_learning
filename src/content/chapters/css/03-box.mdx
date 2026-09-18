@@ -1,0 +1,66 @@
+---
+course: css
+order: 3
+title: Box model
+summary: margin, padding, border, box-sizing.
+estMinutes: 30
+---
+
+## Что это
+
+Каждый элемент на странице — **коробка** (прямоугольник), даже круглая кнопка: скругление режет углы той же коробки.
+
+Слои от центра наружу:
+
+- **content** — текст или картинка, то, чему задаёшь `width` / `height`;
+- **padding** — внутренний воздух между содержимым и рамкой;
+- **border** — рамка;
+- **margin** — внешний зазор до соседних коробок. Фон элемента margin не закрашивает.
+
+**Block** (`p`, `div`, `h1`): занимает ширину родителя по умолчанию, соседи идут **сверху вниз**. Можно задать `width` и вертикальные margin.
+
+**Inline** (`a`, `span`, `strong`): течёт в строке, как слова. `width` / `height` **не работают**. Горизонтальный padding да, вертикальный визуально странный (строка не раздвигается как блок).
+
+**Inline-block:** в строке, как слово, но `width`/`height` можно. Редко нужен, когда flex уже есть.
+
+## Зачем
+
+Без модели коробок колонка «200px» внезапно шире: padding и border **добавляются** к width. Три колонки по 33% + padding = горизонтальный скролл. Кажется, что «flex сломался» — виноват box model.
+
+## Как работает
+
+По умолчанию `box-sizing: content-box`: `width` = только content. `border-box` — `width` уже включает padding и border. Сразу на всё дерево:
+
+```css
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+```
+
+Вертикальные `margin` соседних блоков **схлопываются**: два по 20px между абзацами дают 20, не 40. Не лечи отрицательными маргинами, пока не увидел это в DevTools (Computed).
+
+<Scaffold path="projects/web/css/styles.css">
+В начало файла — сброс `box-sizing: border-box` на `*`, `*::before`, `*::after` как в главе.
+
+На карточку колонки (класс вроде `.card` или `li` внутри колонки) задай `padding`, чтобы текст не лип к краю. Можно тонкий `border`, чтобы увидеть коробку.
+
+Не задавай ширину «200px + padding» в уме: с border-box ширина уже включает padding.
+</Scaffold>
+
+<Practice items={[
+  { id: "border-box", label: "В CSS на всё дерево стоит box-sizing: border-box", hint: "Правило со звёздочкой в начале styles.css. В DevTools у любой колонки Computed → box-sizing = border-box, не content-box." },
+  { id: "padding", label: "У карточки доски есть внутренний отступ, текст не впритык к рамке", hint: "padding, не margin: margin — снаружи, фон карточки его не закрашивает. Если «воздуха» нет — селектор не попал в элемент." },
+  { id: "explain-box", label: "Своими словами: слои коробки, block vs inline, зачем box-sizing", hint: "Назови content, padding, border, margin. Скажи, почему у span не задают width как у div." }
+]}>
+Пиши в `projects/web/css/styles.css`. После правки обнови страницу и открой DevTools → Computed у карточки: смотри width, padding, box-sizing.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** ширина колонки в Computed совпадает с ожиданием (padding не «вылезает» сверху width).
+
+**Как проверить:** задай колонке width: 200px и padding: 20px. При border-box коробка 200px, не 240.
+
+**Ещё рано, если:** колонки разъехались из-за content-box, а ты лечишь это отрицательным margin; путаешь padding и margin.
+</Checkpoint>

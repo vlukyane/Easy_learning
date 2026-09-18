@@ -1,0 +1,54 @@
+---
+course: js
+order: 6
+title: localStorage и модули
+summary: persist без бэкенда. export/import без Vite.
+estMinutes: 30
+---
+
+## Что это
+
+**`localStorage`** — словарик **ключ → строка** в **профиле браузера** для этого сайта (точнее, origin: протокол + хост + порт). Это не сервер, не база, не секрет: любой JS на странице может прочитать. Синхронный API: запись тормозит вкладку на миллисекунды. Лимит порядка **5 МБ** на origin. Закрыл браузер — данные обычно живут; приватное окно — часто нет.
+
+**Модули ES:** `export` отдаёт функцию или константу из файла. `import { load } from "./storage.js"` берёт. **`type="module"`** в `<script>` включает этот режим. В пути для браузера **расширение `.js` обязательно** — это URL, не догадка Node.
+
+## Зачем
+
+Массив карточек живёт в RAM вкладки. F5 убивает RAM. Без storage доска — игрушка на один заход. Без модулей `board.js` раздувается в простыню: смешаны DOM, JSON, кнопки — сложнее искать баг.
+
+Боль: положил объект в `setItem` без `stringify` — браузер сохранит `"[object Object]"`. Прочитал без `parse` — работаешь со строкой, `.filter` нет.
+
+## Как работает
+
+```js
+localStorage.setItem("study-board", JSON.stringify(cards));
+const raw = localStorage.getItem("study-board");
+```
+
+Ключ свой, не чужой (`ai-learning-progress-v1` — это портал, не трогай).
+
+Модули: `export function render()` в `board.js`, при росте — `storage.js` + `import { load, save } from "./storage.js"`.
+
+`file://` модули часто режет безопасность. Если import не грузится — позже Vite/`npx serve`. Пока можно один `board.js` без import.
+
+<Scaffold path="projects/web/js">
+Вынеси `load` / `save` в `storage.js` или оставь внизу `board.js`. Ключ localStorage — свой, например `study-board`, **не** `ai-learning-progress-v1`.
+
+`save`: `JSON.stringify` массива. `load`: `getItem` → `parse` в try/catch → если мусор, верни `[]`. После `save` обнови страницу (F5) и вызови `load` в уме: карточки должны вернуться.
+</Scaffold>
+
+<Practice items={[
+  { id: "save-load", label: "Есть load и save: stringify при записи, parse в try/catch при чтении", hint: "Битая строка в storage не должна уронить скрипт. Проверка: в Console поставь localStorage.setItem('study-board', 'не json') и обнови — доска пустая, не красный экран." },
+  { id: "own-key", label: "Ключ storage не совпадает с ключом портала курса", hint: "В Application → Local Storage не затирай ai-learning-progress-v1. Свой ключ осмысленный, один." },
+  { id: "explain-storage", label: "Своими словами: localStorage не сервер; зачем type=module и .js в import", hint: "Данные в профиле браузера, видны любому JS на странице, лимит около 5 МБ. Это не пароли. import в браузере — URL с расширением." }
+]}>
+Проверь круг: добавь карточку руками в коде / консоли, save, F5, load. Или наоборот: setItem в Console, reload, страница читает.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** F5 сохраняет карточку, которую записал код (или Console), и чужой ключ портала цел.
+
+**Как проверить:** Application → Local Storage → свой ключ, значение — JSON-массив. parse не голый.
+
+**Ещё рано, если:** кладёшь объект без stringify (получишь [object Object]); ловишь прогресс портала; нет try/catch.
+</Checkpoint>

@@ -1,0 +1,15 @@
+---
+interface Props {
+  course: string;
+}
+
+const { course } = Astro.props;
+---
+
+<button
+  type="button"
+  data-reset-course={course}
+  class="font-mono text-[11px] uppercase tracking-[0.14em] text-faint hover:text-ink"
+>
+  Сбросить прогресс курса
+</button>

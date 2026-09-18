@@ -1,0 +1,13 @@
+---
+import { courseHref, getCourse, getCourses } from "../../lib/content";
+
+export async function getStaticPaths() {
+  const courses = await getCourses();
+  return courses.map((course) => ({ params: { course: course.id } }));
+}
+
+const { course: courseSlug } = Astro.params;
+const course = await getCourse(courseSlug!);
+if (!course) throw new Error(`Unknown course: ${courseSlug}`);
+return Astro.redirect(courseHref(course.data.section, course.id), 301);
+---

@@ -1,0 +1,46 @@
+---
+interface Props {
+  compact?: boolean;
+  trackSlug?: string;
+  trackTitle?: string;
+  showPrinciples?: boolean;
+}
+
+const { compact = false, trackSlug, trackTitle, showPrinciples = false } = Astro.props;
+---
+
+<header
+  class:list={[
+    "border-b border-line bg-paper",
+    compact ? "px-4 py-3" : "px-6 py-4 md:px-10",
+  ]}
+>
+  <div class:list={["flex items-baseline justify-between gap-6", compact ? "" : "mx-auto max-w-6xl"]}>
+    <div class="flex min-w-0 items-baseline gap-3">
+      <a href="/" class="font-serif text-lg tracking-tight text-ink" data-astro-prefetch>
+        Learning
+      </a>
+      {
+        trackTitle && trackSlug && (
+          <a
+            href={`/tracks/${trackSlug}`}
+            class="truncate font-mono text-[11px] uppercase tracking-[0.16em] text-muted hover:text-ink"
+            data-astro-prefetch
+          >
+            {trackTitle}
+          </a>
+        )
+      }
+    </div>
+    <nav class="flex items-center gap-5 font-mono text-[11px] uppercase tracking-[0.16em] text-muted">
+      <a href="/" class="hover:text-ink" data-astro-prefetch>Разделы</a>
+      {
+        showPrinciples && (
+          <a href="/tracks/ai#principles" class="hover:text-ink">
+            Принципы
+          </a>
+        )
+      }
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,3 @@
+Jane Doe
+Software engineer, 5 years. Python, tests, on-call.
+Projects: billing API, internal tools.

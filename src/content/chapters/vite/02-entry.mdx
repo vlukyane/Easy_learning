@@ -1,0 +1,52 @@
+---
+course: vite
+order: 2
+title: Точка входа
+summary: index.html → main.jsx. public против src.
+estMinutes: 30
+---
+
+## Что это
+
+В Vite **вход — HTML**, не спрятанный «виртуальный бандл без файла». Браузер всегда начинает с документа. `<script type="module" src="/src/main.jsx">` — корень **модульного графа**: из `main.jsx` тянутся `App`, стор, CSS… Vite строит дерево зависимостей от этих import.
+
+- **`src/`** — код, который **обрабатывают**: JSX, импорты, картинки как модули (получат хеш в имени при сборке).
+- **`public/`** — файлы **копируются как есть**. URL `/favicon.svg` = файл `public/favicon.svg`. Не импортируй их из JS как модули.
+
+## Зачем
+
+Положил фото в `public`, а импортируешь как из `src` — путь не тот. Положил JSON в `src` и ждёшь `/cards.json` — его нет в корне сайта, пока не импортируешь. Путаница «картинка 404» почти всегда про эту границу.
+
+Удалил `index.html` — Vite не знает, что отдавать: входа нет.
+
+## Как работает
+
+Картинка из `src/assets` — `import url from './assets/x.png'`. Картинка, которая должна быть `https://site/photo.jpg` без хеша — в `public/`.
+
+Новой установки нет: Node уже есть.
+
+<Command cwd="projects/web/react" title="Посмотреть вход" code={`ls
+head -n 20 index.html
+ls src`} />
+
+<Scaffold path="projects/web/react/index.html">
+Открой этот файл: найди `script type="module"` на `/src/main.jsx` (или `.js`). Это корень графа. Удалить HTML = Vite не знает, что отдавать.
+
+Папка `src/` — код, который обрабатывают. `public/` — файлы как есть по URL `/имя`. Картинка-модуль импортируется из src; фавиконка часто в public.
+</Scaffold>
+
+<Practice items={[
+  { id: "html-entry", label: "В корневом index.html нашёл script type=module на src/main.jsx", hint: "Команда head выше. Путь начинается с /src/… Это не script без type в середине body как в первой HTML-теме." },
+  { id: "public-vs-src", label: "Могу решить, куда класть файл: public (URL с корня) или src (import)", hint: "JSON для fetch('/cards.json') — public/cards.json. Картинка как модуль с хешем в имени при сборке — import из src/assets." },
+  { id: "explain-entry", label: "Своими словами: вход — HTML, граф модулей, src обрабатывается, public копируется", hint: "Почему 404 на /photo.jpg, если файл лежит в src без import. Почему нет входа без index.html." }
+]}>
+Только осмотр папки react/. Новых пакетов нет. Если index.html нет — ты не в том каталоге.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** понимаешь, почему удаление index.html убивает Vite, и не путаешь public со src.
+
+**Как проверить:** скажи вслух судьбу favicon vs импортированного png.
+
+**Ещё рано, если:** кладёшь всё в public «на всякий случай» или ищешь вход в webpack.config.
+</Checkpoint>

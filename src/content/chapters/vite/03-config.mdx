@@ -1,0 +1,72 @@
+---
+course: vite
+order: 3
+title: vite.config.js
+summary: plugins, alias @, server.port.
+estMinutes: 38
+---
+
+## Что это
+
+**Конфиг** — файл с настройками инструмента: порт dev-сервера, плагины, короткие имена путей. Без него Vite работает «из коробки»; ты пишешь конфиг, когда стандарт неудобен.
+
+**Плагин** — расширение конвейера. **Плагин React** (`@vitejs/plugin-react`): JSX → обычный JS, **Fast Refresh** (HMR для компонентов). Без него `.jsx` — просто ошибка.
+
+**Alias** — короткое имя пути (`@` → папка `src`), не новая библиотека и не npm-пакет. `import x from "@/components/Board.jsx"` = тот же файл, что длинный относительный `../../../`.
+
+## Зачем
+
+Боль: `import` из `../../../../store` ломается при переносе файла. Alias стабилен. Порт 5173 занят другим Vite — без `server.port` или флага сидишь и думаешь, что «не запускается».
+
+## Как работает
+
+Файл в корне React-приложения (часто `vite.config.js`):
+
+```js
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: { "@": path.resolve(root, "src") },
+  },
+  server: { port: 5173 },
+});
+```
+
+После alias: `import { Board } from "@/components/Board.jsx"`.
+
+Перезапусти `npm run dev` после смены конфига.
+
+Порт:
+
+<Command cwd="projects/web/react" title="Dev на 5173 или явно" code={`npx vite --port 5173`} />
+
+Занято — смени `server.port` или убей процесс: `lsof -i :5173` затем `kill PID`.
+
+<Scaffold path="projects/web/react/vite.config.js">
+Собери конфиг как в главе: `plugins: [react()]`, `resolve.alias['@']` → папка `src`, при желании `server.port`.
+
+После сохранения **перезапусти** `npm run dev`. В каком-нибудь компоненте замени длинный относительный import на `@/…`. Если красный экран — alias не попал или путь без расширения не резолвится; чини конфиг, не выдумывай npm-пакет `@`.
+</Scaffold>
+
+<Practice items={[
+  { id: "alias", label: "В vite.config.js alias @ указывает на src", hint: "Открой файл, найди resolve.alias. Это путь на диске, не зависимость из package.json." },
+  { id: "import-alias", label: "Хотя бы один import в src идёт через @/", hint: "Например import { Board } from '@/components/Board.jsx'. Dev собирается без failed to resolve. После смены конфига сервер перезапущен." },
+  { id: "explain-config", label: "Своими словами: зачем конфиг, что делает плагин React, alias не библиотека", hint: "Плагин: JSX → JS и Fast Refresh. Порт — если 5173 занят. Alias — короткое имя папки." }
+]}>
+Правь существующий конфиг (create его уже положил). Не копируй webpack. Не ставь лишние плагины.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** import через @ собирается, dev открывает доску.
+
+**Как проверить:** сломай путь нарочно — оверлей; почини alias. Порт в терминале совпадает с конфигом.
+
+**Ещё рано, если:** @ только в конфиге, импорты старые; сервер не перезапускал; ищешь пакет @ в npm.
+</Checkpoint>

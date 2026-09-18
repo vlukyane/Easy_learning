@@ -1,0 +1,124 @@
+---
+course: html
+order: 2
+title: Стенд машины
+summary: Terminal, Git, Homebrew, VS Code, Chrome — установка через терминал на macOS.
+estMinutes: 52
+---
+
+Пока нет Node. Нужны: терминал, git, редактор, браузер. Команды ниже — **macOS + zsh**.
+
+## Что это
+
+**Терминал** — окно, в котором ты печатаешь команды текстом, а не кликаешь иконки. Внутри работает **оболочка** (у тебя почти наверняка **zsh**): программа, которая читает строку, находит исполняемый файл и запускает его.
+
+**PATH** — список папок, где оболочка ищет программы. Если `git` «не найден», чаще всего его нет в PATH (ещё не поставили, или не открыли новый таб после установки).
+
+**Git** — журнал изменений файлов: кто, когда, что поменял. Это не «облако» и не сайт. Облако (GitHub) появится, если ты сам отправишь журнал на сервер. Для HTML-страниц git нужен, чтобы не потерять вчерашнюю рабочую версию.
+
+**Пакетный менеджер** (Homebrew, `brew`) — каталог готовых программ и одна команда «поставь». Это не то же самое, что скачать `.dmg` с сайта: brew запоминает версию и умеет обновлять.
+
+**Редактор** (VS Code) подсвечивает теги и показывает незакрытые скобки. **DevTools** в Chrome — рентген уже открытой страницы: дерево элементов, ошибки в консоли.
+
+**Command Line Tools** Apple — компилятор и git «с завода». Без них часть программ не соберётся.
+
+## Зачем
+
+Сайт — это файлы в папке. Без терминала ты не увидишь, *в какой* папке ты сейчас (`pwd`), не перейдёшь туда (`cd`), не поймёшь, почему `open index.html` открыл не тот файл. Без git легко затереть рабочий HTML. Без DevTools «страница белая» остаётся загадкой.
+
+## Как работает
+
+Ты печатаешь `ls`. zsh ищет программу `ls` по PATH, запускает её, та печатает имена файлов **текущей папки**. Текущая папка — не «где лежит проект на диске навсегда», а «где стоит сессия прямо сейчас». Поэтому сначала `cd` в `projects/web/html`, потом любые команды про файлы.
+
+После установки brew или `code` оболочка уже запущенная **не подхватывает** новый PATH. Новый таб терминала — не ритуал, а способ загрузить обновлённый `~/.zprofile`.
+
+<Scaffold path="projects/web/html">
+Рабочая папка всей HTML-темы. Сейчас в ней может быть пусто или лежать README — это нормально.
+
+**Что сделать:** в терминале дойти сюда командой `cd` (путь с пробелом — в кавычках) и открыть папку в VS Code через `code .`.
+
+**Чего не делать:** не создавай пока `index.html` «на глаз» в другой папке; не ставь Node — он в теме JavaScript.
+</Scaffold>
+
+## 1. Терминал и папка
+
+Открой «Терминал» или встроенный терминал VS Code. Каждая сессия начинается в домашней директории.
+
+<Command cwd="~" title="Где я и что внутри" code={`pwd
+ls
+cd "/Users/vyachaslau/Projects/AI Learning/projects/web/html"
+pwd`} />
+
+Ожидание: последняя строка заканчивается на `projects/web/html`.
+
+Если путь другой — подставь свой. Пробел в `AI Learning` требует кавычек.
+
+## 2. Инструменты компиляции Apple
+
+Git на Mac часто ставится вместе с Command Line Tools.
+
+<Command cwd="~" title="Установка" code={`xcode-select --install`} />
+
+Появится окно Apple. Дождись окончания. Проверка:
+
+<Command cwd="~" title="Проверка git" code={`git --version`} />
+
+Ожидание: строка вида `git version 2.x`.
+
+## 3. Homebrew
+
+Пакетный менеджер для macOS. Если `brew` уже есть — шаг можно пропустить после проверки.
+
+<Command cwd="~" title="Стоит ли brew" code={`brew --version`} />
+
+Если command not found:
+
+<Command cwd="~" title="Установка Homebrew" code={`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`} />
+
+Скрипт сам скажет, какие две строки добавить в `~/.zprofile` (на Apple Silicon обычно `eval "$(/opt/homebrew/bin/brew shellenv)"`). Выполни их, открой **новое** окно терминала, снова `brew --version`.
+
+<Command cwd="~" title="Git через brew, если системный старый" code={`brew install git
+git --version`} />
+
+## 4. VS Code
+
+<Command cwd="~" title="Установка VS Code" code={`brew install --cask visual-studio-code`} />
+
+Открой Code → Command Palette (`Cmd+Shift+P`) → **Shell Command: Install 'code' command in PATH**. Новое окно терминала:
+
+<Command cwd="projects/web/html" title="Открыть папку в VS Code" code={`code .`} />
+
+## 5. Chrome
+
+Нужен обычный браузер с инструментами разработчика (`Cmd+Option+I`). Если Chrome ещё нет:
+
+<Command cwd="~" title="Google Chrome" code={`brew install --cask google-chrome`} />
+
+## 6. Открыть HTML, когда файл появится
+
+<Command cwd="projects/web/html" title="Открыть index.html в браузере по умолчанию" code={`open index.html`} />
+
+Пока файла нет — команда скажет `No such file`. Это нормально до главы 3.
+
+### Linux / Windows
+
+- Linux: пакетный менеджер дистрибутива (`sudo apt install git`, VS Code с сайта). Homebrew не обязателен.
+- Windows: Git for Windows, winget (`winget install Git.Git`, `winget install Microsoft.VisualStudioCode`), пути без `open` — `start index.html` в cmd или `Invoke-Item` в PowerShell.
+
+<Practice items={[
+  { id: "cd-html", label: "Терминал стоит в папке html, pwd это печатает", hint: "Открой новое окно Терминала. cd с кавычками, если в пути есть пробел (AI Learning). Последняя строка pwd должна заканчиваться на projects/web/html, не на домашнюю папку." },
+  { id: "git", label: "git --version печатает номер версии, не command not found", hint: "Если команды нет — вернись к xcode-select или brew install git. Версия 2.x достаточна; гнаться за последней не нужно." },
+  { id: "code", label: "Из папки html команда code . открывает VS Code", hint: "Если zsh говорит command not found: в VS Code Command Palette → Install 'code' command in PATH, затем новый таб терминала. Точка значит «текущая папка»." },
+  { id: "chrome", label: "Chrome установлен, DevTools открываются с Cmd+Option+I", hint: "Нужна панель Elements (дерево страницы) и Console. Safari тоже умеет, но инструкции курса заточены под Chrome." },
+  { id: "explain-term", label: "Своими словами: терминал, PATH, git не облако, brew не сайт с .dmg", hint: "Скажи, зачем новый таб после установки. Если не можешь — перечитай «Что это» / «Как работает»." }
+]}>
+Поставь инструменты по командам выше **по порядку**. После каждого шага смотри «ожидание» в блоке команды. Если что-то красное — не переходи дальше: чаще всего виноват старый таб терминала без обновлённого PATH.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** в новом окне терминала `pwd` показывает `projects/web/html`, `git --version` и `code .` работают, Chrome открывает DevTools.
+
+**Как проверить:** закрой все вкладки терминала, открой новую, повтори `pwd`, `git --version`, `code .`. Если сломалось — PATH не подхватился, не «компьютер сломан».
+
+**Ещё рано, если:** ставишь Node / nvm / npm. Если `open index.html` орёт No such file — это нормально, файла ещё нет.
+</Checkpoint>

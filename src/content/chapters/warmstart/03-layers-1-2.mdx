@@ -1,0 +1,43 @@
+---
+course: warmstart
+order: 3
+title: Слои exact и normalized
+summary: Hash-map точной строки и нормализации. Замер hit-rate.
+estMinutes: 25
+---
+
+Слои 1 и 2 тривиальны — и поэтому их надо измерить отдельно, чтобы semantic не приписывал себе чужие хиты.
+
+<Scaffold path="projects/warmstart/src/cache/exact.py">
+Ключ — исходная строка. Значение — ответ + intent_id + ts.
+</Scaffold>
+
+<Scaffold path="projects/warmstart/src/cache/normalize.py">
+Нормализация: lower, срезать пунктуацию, схлопнуть пробелы, опционально стоп-слова. Тот же hash-map по нормализованному ключу.
+</Scaffold>
+
+Политика чтения: exact → normalized → (позже) semantic. Запись — во все слои при miss и живом ответе LLM.
+
+<Command cwd="projects/warmstart" title="Hit-rate слоёв 1–2" code={`python -c "from src.metrics import eval_layers; eval_layers(layers=['exact','normalized'])"`} />
+
+Печатай hit-rate каждого слоя как **долю запросов, отвечённых этим слоем**, а не кумулятив вперемешку. Кумулятив тоже нужен — второй строкой.
+
+<Trap title="Нормализация, склеивающая интенты">
+Слишком агрессивные стоп-слова могут схлопнуть «cancel subscription» и «cancel trial». Проверь конфликты на ground truth до semantic.
+</Trap>
+
+<Practice items={[
+  { id: "exact", label: "Exact-кэш попадает только на байт-в-байт ту же строку", hint: "Смени регистр — miss. Реализация: dict ключ = сырой текст. Не нормализуй на этом слое." },
+  { id: "norm", label: "Normalized ловит регистр и пунктуацию, но не склеивает разные intent_id", hint: "Нижний регистр, выкинуть лишние знаки. Проверь конфликтные пары: после нормы ключи не должны совпасть, если id разные. Если совпали — норма слишком агрессивная." },
+  { id: "rates", label: "В файле записаны hit-rate exact и normalized по отдельности", hint: "Не одно «кэш 70%». Два числа на одном наборе фраз. logs/ или README." }
+]}>
+Реализуй два слоя до семантики. Прогон по фразам корпуса, не «на глаз три примера».
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** два hit-rate лежат в файле и нормализация не склеивает разные intent_id.
+
+**Как проверить:** юнит или ручной скрипт на конфликтной паре + логи hit-rate.
+
+**Ещё рано, если:** один слой «почти exact»; норма съела разные интенты; чисел нет.
+</Checkpoint>

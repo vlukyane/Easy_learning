@@ -1,0 +1,61 @@
+---
+course: casefile
+order: 2
+title: Контракты
+summary: Pydantic на каждый хендофф. Агент не возвращает свободный текст.
+estMinutes: 30
+---
+
+Сначала схемы, потом агенты. Если начать с промптов, хендофф снова станет строкой.
+
+<Scaffold path="projects/casefile/src/contracts.py">
+Файл-заготовка уже есть. Допиши и проверь поля так, чтобы хендофф нельзя было собрать из свободного текста.
+
+**Какие модели и поля:**
+- `ClaimIntake`: `claim_id`, `narrative`, `claimed_amount`, `incident_date`, `attachments_meta`.
+- `IntakeResult`: те же факты плюс `facts: list[str]` — не сырой completion.
+- `ClassifierResult`: `claim_type`, `priority` (`low` | `medium` | `high`), `confidence`.
+- `FraudResult`: `risk` (`low` | `medium` | `high`), `flags: list[str]`, `send_to_human: bool`.
+- `Assessment`: `recommended_payout`, `rationale_facts: list[str]`.
+- `Handoff`: `from_agent`, `to_agent`, `payload` (структура / tagged union, не `str`), `tokens_used`, `cost_usd`.
+- `PayoutDecision`: `approved: bool`, `approver: str | None`, `amount`.
+
+**Чего не делать:** не добавляй `raw_llm_output` или `completion` на границе. Парсинг — внутри агента (глава 3). Не правь тесты «чтобы проходили» — почини модели. Никакого `str` там, где должно быть поле.
+</Scaffold>
+
+Минимум полей, которые стоит заложить:
+
+- Intake: `claim_id`, `narrative`, `claimed_amount`, `incident_date`, `attachments_meta`.
+- Classifier: `claim_type`, `priority`, `confidence`.
+- Fraud: `risk` (`low`|`medium`|`high`), `flags: list[str]`, `send_to_human: bool`.
+- Assessment: `recommended_payout`, `rationale_facts: list[str]`.
+- Handoff: `from_agent`, `to_agent`, `payload` как tagged union, `tokens_used`, `cost_usd`.
+- PayoutDecision: `approved: bool`, `approver: str | None`, `amount`.
+
+<Command cwd="projects/casefile" title="Прогнать схемы" code={`pytest tests/test_handoff_schema.py`} />
+
+Тест в скелете проверяет, что невалидный хендофф поднимает `ValidationError`, а валидный — нет. Сначала он может быть skip — сними skip, когда модели готовы.
+
+<Action title="Запрети свободный текст на границе">
+В типах не должно быть поля `raw_llm_output`, которое оркестратор «как-нибудь» парсит. Парсинг — внутри агента, наружу — только модель.
+</Action>
+
+<Trap title="Агенты общаются текстом">
+Если хендофф это строка, ты не тренируешь навык. Типы обязательны.
+</Trap>
+
+<Practice items={[
+  { id: "models", label: "В contracts.py описаны IntakeResult, ClassifierResult, FraudResult, Assessment и Handoff с полями из главы", hint: "Открой файл и сверь со списком. priority и risk — литералы, не произвольная строка. Handoff.payload не str. claimed_amount и recommended_payout — числа, не «около тысячи»." },
+  { id: "no-raw", label: "На границе агентов нет поля со свободным текстом LLM: ни raw_llm_output, ни completion", hint: "Просмотри contracts.py целиком. facts и rationale_facts — списки коротких фактов, не dump ответа модели. Оркестратор не должен «как-нибудь» парсить строку." },
+  { id: "pytest-schema", label: "pytest tests/test_handoff_schema.py: мусорный хендофф поднимает ValidationError, валидный проходит", hint: "Команда из главы, каталог projects/casefile. Если тест skip — сними skip, не комментируй assert. Невалидный JSON не должен стать Handoff." }
+]}>
+Работай только в `src/contracts.py`. Агентов и оркестратор не пиши. Сначала поля моделей, потом команда pytest из главы — без ключа API.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** невалидный JSON агента не проходит в следующий шаг даже в юните без API.
+
+**Как проверить:** из `projects/casefile` запусти `pytest tests/test_handoff_schema.py`. Открой `src/contracts.py`: семь моделей на месте, нет поля сырого выхода LLM.
+
+**Ещё рано, если:** хендофф это строка; тест skip или переписан под «любой dict»; модели есть, но payload — свободный текст.
+</Checkpoint>

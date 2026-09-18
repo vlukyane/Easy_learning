@@ -1,0 +1,45 @@
+---
+course: groundtruth
+order: 5
+title: Baseline в репо
+summary: Текущие числа в eval/baseline.json. Сравнение с epsilon.
+estMinutes: 20
+---
+
+Baseline — это не «лучшее, чего мы хотим», а **зафиксированное текущее**. Его коммитят. Потом гейт сравнивает новый прогон с файлом.
+
+<Scaffold path="projects/groundtruth/eval/baseline.json">
+Заглушка с нулями уже лежит в репо — **цифры руками не правь**. Реализуй `write_baseline(gold_path, out_path)` в `eval/metrics.py`: вызывает `evaluate` на том же split, что будет в гейте (`dev` / `GATE_SPLIT`), и записывает JSON.
+
+**Поля.** `k` — то же значение, что `K` в retrieval; `recall`, `precision`, `mrr`; `n_queries`; `created_at` — ISO-время прогона. По желанию `git` — короткий hash. Никакого поля «хотим 0.9».
+
+Baseline — снимок **текущей** системы, не цель из хаба курса. Коммить файл отдельно от правок чанкера и BM25. Допуск на шум — константа `EPSILON = 0.01` в `src/constants.py`, не магическое число в JSON.
+</Scaffold>
+
+<Command cwd="projects/groundtruth" title="Записать baseline" code={`python -c "from eval.metrics import write_baseline; write_baseline('eval/gold.jsonl', 'eval/baseline.json')"`} />
+
+Epsilon: маленький допуск на флаки, например `0.01` абсолютных. Без epsilon любой шум красный; слишком большой epsilon — гейт мёртвый.
+
+<Action title="Закоммить baseline отдельно от кода retrieval">
+В реальном PR так и делают: сначала числа, потом эксперименты. Здесь — просто не правь baseline заодно с чанкером.
+</Action>
+
+<Trap title="Поднять baseline руками">
+Править JSON «ну пусть будет 0.9» без прогона — подлог. Файл пишет только скрипт.
+</Trap>
+
+<Practice items={[
+  { id: "file", label: "eval/baseline.json создан скриптом", hint: "Файл перезаписывает write_baseline, не копипаста цифр в редакторе. created_at не «unset». n_queries > 0, recall не обязан быть красивым. Если оставил нули из заглушки — гейту ещё не с чем сравнивать." },
+  { id: "epsilon", label: "EPSILON константой в ci_eval / metrics", hint: "В src/constants.py уже EPSILON = 0.01. Гейт пустит прогон, если recall ≥ baseline − epsilon. Не размножай 0.01 тремя разными числами в трёх файлах. Слишком большой допуск (0.2) убивает гейт; ноль может краснеть от округления." },
+  { id: "match-k", label: "k в baseline совпадает с k retrieval", hint: "Если K=10, в JSON поле k тоже 10. Иначе сравнишь recall@5 с recall@10. write_baseline копирует K из constants, не принимает k «с потолка»." }
+]}>
+Запусти `write_baseline` один раз на честном прогоне. Открой JSON глазами: `k` совпадает с константой, числа не выдуманы. Не коммить правку baseline в одном PR с «улучшением» retrieval.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** baseline в репозитории как снимок текущего прогона, `k` совпадает с retrieval, epsilon — константа, файл написал скрипт.
+
+**Как проверить:** в JSON больше не нули заглушки; `k` равен `K` из `src/constants.py`; повторный `evaluate` на том же коде даёт recall в пределах epsilon от файла. `git diff` не содержит ручной правки одной цифры.
+
+**Ещё рано, если:** вписал 0.9 руками «чтобы было красиво»; путаешь baseline с целевой метрикой хаба; `k` в файле другой; `write_baseline` всё ещё `NotImplementedError`.
+</Checkpoint>

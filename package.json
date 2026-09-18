@@ -1,0 +1,23 @@
+{
+  "name": "ai-learning-portal",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.7",
+    "@tailwindcss/vite": "^4.1.13",
+    "astro": "^5.13.10",
+    "tailwindcss": "^4.1.13"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

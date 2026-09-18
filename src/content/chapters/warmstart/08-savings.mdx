@@ -1,0 +1,49 @@
+---
+course: warmstart
+order: 8
+title: Экономия
+summary: $ и латентность vs цена ошибок на 400k/мес. DoD.
+estMinutes: 25
+---
+
+Формула простая и должна быть явной в коде:
+
+- `calls = 400_000`
+- `cost_no_cache = calls * avg_cost_llm`
+- `cost_with_cache = hits * cost_lookup + misses * avg_cost_llm`
+- `saved = cost_no_cache - cost_with_cache`
+- `errors = calls * (доля semantic hits) * false_hit_rate` — или по твоей формуле покрытия
+
+Латентность: p50 miss vs p50 hit. Даже грубая оценка из логов Fieldnote/smoke.
+
+<Scaffold path="projects/warmstart/src/metrics.py">
+`monthly_savings(operating_point, calls=400_000)` пишет `logs/savings.md`.
+</Scaffold>
+
+<Command cwd="projects/warmstart" title="Посчитать месяц" code={`python -c "from src.metrics import monthly_savings; monthly_savings()"`} />
+
+<Metric>
+В отчёте рядом: hit-rate, false-hit, порог, $ saved / мес, ожидаемые ошибочные ответы / мес. Без последней колонки экономия врёт.
+</Metric>
+
+<DoD>
+- Три слоя, метрики по каждому.
+- Кривая и рабочая точка.
+- Оценка экономии в деньгах.
+</DoD>
+
+<Practice items={[
+  { id: "savings-file", label: "logs/savings.md: доллары экономии и ожидаемые ошибки на 400k запросов", hint: "Формула из рабочей точки: hit-rate × стоимость вызова vs false-hit × цена ошибки. Числа с единицами, не «выгодно»." },
+  { id: "layers", label: "В отчёте hit-rate всех трёх слоёв: exact, normalized, semantic", hint: "Чтобы видеть, кто приносит покрытие. Semantic без двух нижних слоёв в отчёте — дыра." },
+  { id: "dod", label: "DoD хаба: рабочая точка + false-hit + оценка на 400k лежат в файле", hint: "Сверь с хабом курса. Если чего-то нет в savings.md — не закрывай." }
+]}>
+Финальный отчёт, не новый алгоритм. Собери числа из предыдущих глав в один файл.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** рабочая точка и месячная экономия лежат в файле вместе с ценой ошибок.
+
+**Как проверить:** открыть savings.md, сверить с curve и формулой false-hit.
+
+**Ещё рано, если:** только hit-rate; 400k не пересчитаны; false-hit забыт.
+</Checkpoint>

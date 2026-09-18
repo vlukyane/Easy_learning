@@ -1,0 +1,41 @@
+---
+course: slotfill
+order: 3
+title: Вариант A — промпт
+summary: Few-shot Claude, одна схема парсинга, замер на test.
+estMinutes: 35
+---
+
+A делают **до** LoRA и не подкручивают после взгляда на B.
+
+<Scaffold path="projects/slotfill/src/baselines/prompt.py">
+Few-shot на 4–8 примерах из train (не test). Structured output в ту же схему, что LoRA.
+</Scaffold>
+
+Модель: Haiku, если поле-accuracy достаточна; иначе Sonnet. Логируй cost и latency каждого документа — потом $/1000.
+
+Не оценивай A на train. Можно подкрутить промпт на val, test — один раз в главе 5–6.
+
+<Command cwd="projects/slotfill" title="Прогон A на маленьком срезе val" code={`python -c "from src.baselines.prompt import run; run(split='val', limit=30)"`} />
+
+Парсер выхода общий: если JSON кривой — поле пустое, текст модели не засчитывается. Иначе сравнение с LoRA несравнимо.
+
+<Practice items={[
+  { id: "schema", label: "Одна Pydantic-схема полей для систем A и B", hint: "Одинаковые имена полей. Парсер выхода общий. Не схема_v2 только для LoRA." },
+  { id: "fewshot-train", label: "Few-shot примеры взяты только из train, не из val/test", hint: "Проверь id примеров в промпте против splits.json. Утечка здесь обесценит сравнение." },
+  { id: "logged", label: "Прогон A пишет tokens, cost, latency в лог", hint: "JSONL как в Fieldnote-духе: на документ. Без лога ось $ не заполнить." }
+]}>
+Система A должна работать на val. Test не трогай до harness. Модель дешёвая, пока качество не упрётся.
+</Practice>
+
+<Scaffold path="projects/slotfill/src/prompt_extract.py">
+Промпт + parse в Pydantic + log_call. few-shot загружай из train id. Выход — тот же объект, что у B.
+</Scaffold>
+
+<Checkpoint>
+**Готово, когда:** A извлекает поля на val и логи стоимости существуют.
+
+**Как проверить:** несколько val-доков, лог не пустой, few-shot id ⊂ train.
+
+**Ещё рано, если:** примеры с теста; нет схемы; нет лога; уже обучаешь LoRA.
+</Checkpoint>

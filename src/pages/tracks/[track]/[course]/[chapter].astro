@@ -1,0 +1,132 @@
+---
+import Base from "../../../../layouts/Base.astro";
+import SiteHeader from "../../../../components/SiteHeader.astro";
+import ChapterNav from "../../../../components/ChapterNav.astro";
+import ChapterFooter from "../../../../components/ChapterFooter.astro";
+import ProgressBar from "../../../../components/ProgressBar.astro";
+import Goal from "../../../../components/mdx/Goal.astro";
+import Pilot from "../../../../components/mdx/Pilot.astro";
+import Metric from "../../../../components/mdx/Metric.astro";
+import Trap from "../../../../components/mdx/Trap.astro";
+import DoD from "../../../../components/mdx/DoD.astro";
+import Command from "../../../../components/mdx/Command.astro";
+import Action from "../../../../components/mdx/Action.astro";
+import Practice from "../../../../components/mdx/Practice.astro";
+import Scaffold from "../../../../components/mdx/Scaffold.astro";
+import Checkpoint from "../../../../components/mdx/Checkpoint.astro";
+import {
+  chapterHref,
+  chapterId,
+  chapterSlug,
+  courseHref,
+  getChapters,
+  getCourse,
+  getCourses,
+  getSection,
+  getSections,
+  renderChapter,
+} from "../../../../lib/content";
+
+export async function getStaticPaths() {
+  const sections = await getSections();
+  const paths = [];
+  for (const section of sections) {
+    const courses = await getCourses(section.id);
+    for (const course of courses) {
+      const chapters = await getChapters(course.id);
+      for (const chapter of chapters) {
+        paths.push({
+          params: {
+            track: section.id,
+            course: course.id,
+            chapter: chapterSlug(chapter),
+          },
+        });
+      }
+    }
+  }
+  return paths;
+}
+
+const { track, course: courseSlug, chapter: chapterParam } = Astro.params;
+const section = await getSection(track!);
+const course = await getCourse(courseSlug!);
+if (!section || !course) throw new Error(`Unknown course: ${track}/${courseSlug}`);
+if (course.data.section !== section.id) throw new Error("Course is not in this track");
+
+const chapters = await getChapters(course.id);
+const chapter = chapters.find((ch) => chapterSlug(ch) === chapterParam);
+if (!chapter) throw new Error(`Unknown chapter: ${chapterParam}`);
+
+const index = chapters.findIndex((ch) => ch.id === chapter.id);
+const prev = index > 0 ? chapters[index - 1] : null;
+const next = index < chapters.length - 1 ? chapters[index + 1] : null;
+const id = chapterId(chapter);
+const { Content } = await renderChapter(chapter);
+const hub = courseHref(section.id, course.id);
+
+const navItems = chapters.map((ch) => ({
+  slug: chapterSlug(ch),
+  title: ch.data.title,
+  order: ch.data.order,
+  href: chapterHref(section.id, course.id, chapterSlug(ch)),
+  id: chapterId(ch),
+}));
+---
+
+<Base title={`${chapter.data.title} — ${course.data.title}`} description={chapter.data.summary}>
+  <div class="flex min-h-screen flex-col">
+    <SiteHeader
+      compact
+      trackSlug={section.id}
+      trackTitle={section.data.title}
+      showPrinciples={section.id === "ai"}
+    />
+    <ProgressBar course={course.id} total={chapters.length} />
+    <div class="flex min-h-0 flex-1">
+      <ChapterNav course={course.id} currentSlug={chapterSlug(chapter)} items={navItems} />
+      <article
+        class="min-w-0 flex-1"
+        style="view-transition-name: lesson-pane"
+        data-visit-chapter
+        data-course={course.id}
+        data-slug={chapterSlug(chapter)}
+      >
+        <div class="mx-auto max-w-[42rem] px-5 py-10 md:px-8 md:py-14">
+          <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">
+            <a href={hub} class="hover:text-accent" data-astro-prefetch>{course.data.title}</a>
+            <span class="mx-2 text-line">/</span>
+            глава {chapter.data.order} из {chapters.length}
+          </p>
+          <h1 class="mt-3 font-serif text-3xl tracking-tight md:text-4xl">{chapter.data.title}</h1>
+          <p class="mt-3 font-serif text-muted">{chapter.data.summary}</p>
+
+          <div class="prose-lesson mt-10">
+            <Content
+              components={{
+                Goal,
+                Pilot,
+                Metric,
+                Trap,
+                DoD,
+                Command,
+                Action,
+                Practice,
+                Scaffold,
+                Checkpoint,
+              }}
+            />
+          </div>
+
+          <ChapterFooter
+            course={course.id}
+            chapterId={id}
+            hubHref={hub}
+            prevHref={prev ? chapterHref(section.id, course.id, chapterSlug(prev)) : null}
+            nextHref={next ? chapterHref(section.id, course.id, chapterSlug(next)) : null}
+          />
+        </div>
+      </article>
+    </div>
+  </div>
+</Base>

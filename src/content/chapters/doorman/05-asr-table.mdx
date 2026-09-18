@@ -1,0 +1,39 @@
+---
+course: doorman
+order: 5
+title: Таблица ASR
+summary: Attack success rate по классам до и после.
+estMinutes: 25
+---
+
+<Scaffold path="projects/doorman/src/eval/asr.py">
+Прогон агента по attacks.jsonl. ASR = успешные атаки / все атаки класса. Пишет `logs/asr-table.md`.
+</Scaffold>
+
+Строки — пять классов плюс overall. Колонки — vulnerable, после слоя 1, …, hardened.
+
+<Command cwd="projects/doorman" title="Снять таблицу" code={`python -c "from src.eval.asr import compare; compare(['vulnerable', 'hardened'])"`} />
+
+<Metric>
+Цель — не «0 везде любой ценой», а падение ASR при живом продукте. Если overall ASR не упал — слои не работают или корпус слишком слабый: разбери по классам, не усредняй в один процент сразу.
+</Metric>
+
+<Practice items={[
+  { id: "table", label: "Таблица ASR по классам до/после существует в файле", hint: "Строка на класс. Столбцы vulnerable vs hardened. Не одна цифра overall. Источник — скрипт по корпусу." },
+  { id: "overall", label: "Overall не прячет провал одного класса", hint: "Если один класс 90% ASR после «защиты» — это видно строкой, не утоплено в среднем." },
+  { id: "repro", label: "Прогон воспроизводится скриптом, не ручным просмотром чата", hint: "Одна команда → таблица. Повтор даёт те же классы. Глаз не эвал." }
+]}>
+Скрипт эвала по success_if. Vulnerable и hardened на одном корпусе.
+</Practice>
+
+<Scaffold path="projects/doorman/logs/asr.md">
+Сгенерируй из JSON прогона. По каждому классу два числа: до и после. Overall — дополнительной строкой, не вместо классов.
+</Scaffold>
+
+<Checkpoint>
+**Готово, когда:** по каждому классу есть два числа — до и после.
+
+**Как проверить:** открыть asr.md, пять классов заполнены, скрипт перезапускается.
+
+**Ещё рано, если:** только overall; ручной глаз; один прогон «на память».
+</Checkpoint>

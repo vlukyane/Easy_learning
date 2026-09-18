@@ -1,0 +1,47 @@
+---
+course: warmstart
+order: 2
+title: Ground truth
+summary: Сотни интентов и вариации. Синтетика лучше сырых логов.
+estMinutes: 35
+---
+
+Без разметки «какие вопросы про одно и то же» false-hit измерить нельзя. Поэтому синтетика с известными интентами удобнее реальных логов.
+
+<Scaffold path="projects/warmstart/data/intents.jsonl.example">
+`intent_id`, `canonical_answer`, `phrases: list[str]`. Каждая фраза — вариация того же интента.
+</Scaffold>
+
+<Scaffold path="projects/warmstart/src/data/generate.py">
+Генератор: N интентов × K парафраз (можно шаблонами или Haiku). Пишет `data/intents.jsonl`.
+</Scaffold>
+
+Стартовый масштаб для отладки: 50 интентов × 20 фраз. Для отчёта ближе к плану: сотни интентов и сотни тысяч вариаций не обязательны в первом прогоне, но формула экономии всё равно считается на 400k запросов/мес (экстраполяция).
+
+<Command cwd="projects/warmstart" title="Сгенерировать маленький корпус" code={`python -c "from src.data.generate import main; main(intents=50, phrases=20)"`} />
+
+Правило сплита: часть пар (query, cached_query) держи для валидации false-hit, не для подбора порога. Иначе рабочая точка подогнана.
+
+<Action title="Заложи конфликтующие интенты">
+Добавь пары близких по лексике, разных по ответу: reset password vs reset MFA, refund vs replacement. Без них semantic-слой будет «идеальным» враньём.
+</Action>
+
+<Trap title="Нет ground truth">
+Кэш по эмбеддингам без intent_id — это демо, не Warmstart.
+</Trap>
+
+<Practice items={[
+  { id: "file", label: "Есть data/intents.jsonl: у каждой фразы intent_id и канонический ответ", hint: "Несколько paraphrases на интент. id стабильные. Файл в git или рядом с примером. Пустые фразы не клади." },
+  { id: "conflicts", label: "Есть близкие интенты с разными ответами — ложные друзья", hint: "Пары вроде «отменить заказ» vs «отменить подписку». Без них semantic-кэш нечем мерить. Запиши 5+ таких пар явно." },
+  { id: "split", label: "Отложен набор пар для измерения false-hit, не для подбора порога", hint: "Как held-out: не крути порог на тех же парах, которыми потом хвастаешься. Файл или флаг split в JSONL." }
+]}>
+Сначала разметка, потом кэш. Не генерируй интенты только LLM-ом без проверки близнецов. Пиши в `projects/warmstart/data/`.
+</Practice>
+
+<Checkpoint>
+**Готово, когда:** у каждой фразы есть intent_id и ты знаешь, какие пары — ложные друзья.
+
+**Как проверить:** открыть JSONL, найти два похожих текста с разным id и разным answer.
+
+**Ещё рано, если:** один интент; нет конфликтов; порог уже «настроен» на тех же фразах.
+</Checkpoint>

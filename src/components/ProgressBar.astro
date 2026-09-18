@@ -1,0 +1,18 @@
+---
+interface Props {
+  course: string;
+  completed?: number;
+  total: number;
+}
+
+const { course, total } = Astro.props;
+---
+
+<div
+  class="h-[3px] w-full overflow-hidden bg-line"
+  data-progress-bar
+  data-course={course}
+  data-total={total}
+>
+  <div class="h-full bg-accent" data-progress-fill style="width: 0%"></div>
+</div>

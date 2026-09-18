@@ -1,0 +1,2 @@
+{"intent_id": "password-reset", "canonical_answer": "Use the reset link on /forgot.", "phrases": ["how do I reset my password", "forgot password what now"]}
+{"intent_id": "mfa-reset", "canonical_answer": "MFA reset requires a verified device.", "phrases": ["reset my authenticator", "how do I reset MFA"]}

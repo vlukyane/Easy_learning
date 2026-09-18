@@ -1,0 +1,119 @@
+---
+import Base from "../../../layouts/Base.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
+import ContinueButton from "../../../components/ContinueButton.astro";
+import ResetCourse from "../../../components/ResetCourse.astro";
+import {
+  chapterHref,
+  chapterId,
+  chapterSlug,
+  courseHref,
+  getChapters,
+  getCourse,
+  getCourses,
+  getSection,
+  getSections,
+} from "../../../lib/content";
+
+export async function getStaticPaths() {
+  const sections = await getSections();
+  const paths = [];
+  for (const section of sections) {
+    const courses = await getCourses(section.id);
+    for (const course of courses) {
+      paths.push({ params: { track: section.id, course: course.id } });
+    }
+  }
+  return paths;
+}
+
+const { track, course: courseSlug } = Astro.params;
+const section = await getSection(track!);
+const course = await getCourse(courseSlug!);
+if (!section || !course) throw new Error(`Unknown course: ${track}/${courseSlug}`);
+if (course.data.section !== section.id) throw new Error("Course is not in this track");
+
+const chapters = await getChapters(course.id);
+const ids = chapters.map((ch) => chapterId(ch));
+const first = chapters[0];
+const continueHref = first
+  ? chapterHref(section.id, course.id, chapterSlug(first))
+  : courseHref(section.id, course.id);
+---
+
+<Base title={`${course.data.title} — ${section.data.title}`} description={course.data.skill}>
+  <SiteHeader
+    trackSlug={section.id}
+    trackTitle={section.data.title}
+    showPrinciples={section.id === "ai"}
+  />
+  <main class="mx-auto max-w-3xl px-6 pb-24 pt-12 md:px-0">
+    <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+      Тема {String(course.data.order).padStart(2, "0")}
+    </p>
+    <h1 class="mt-3 font-serif text-4xl tracking-tight">{course.data.title}</h1>
+    <p class="mt-3 font-serif text-lg text-muted">{course.data.skill}</p>
+
+    <div class="mt-10 grid gap-4">
+      <aside class="border-l-2 border-accent bg-panel px-4 py-4">
+        <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">Цель</p>
+        <p class="mt-2 font-serif text-lg">{course.data.goal}</p>
+      </aside>
+      <aside class="border border-line bg-raised px-4 py-4">
+        <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">Пилот</p>
+        <p class="mt-2 font-serif text-lg">{course.data.pilot}</p>
+      </aside>
+      <aside class="bg-panel px-4 py-4">
+        <p class="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Definition of Done</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 font-serif">
+          {course.data.dod.map((item) => <li>{item}</li>)}
+        </ul>
+      </aside>
+    </div>
+
+    <p class="mt-6 font-mono text-xs text-faint">
+      Стек: {course.data.stack.join(" · ")} · код в {course.data.projectDir}
+    </p>
+
+    <div
+      class="mt-10 flex flex-wrap items-end justify-between gap-4"
+      data-hub-progress
+      data-course={course.id}
+      data-ids={ids.join(",")}
+    >
+      <div>
+        <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-faint">Прогресс</p>
+        <p class="mt-1 font-serif text-2xl" data-hub-count>— / {chapters.length}</p>
+        <div class="mt-2 h-[3px] w-48 bg-line">
+          <div class="h-full bg-accent" data-progress-fill style="width: 0%"></div>
+        </div>
+      </div>
+      <ContinueButton track={section.id} course={course.id} nextHref={continueHref} />
+    </div>
+
+    <ol class="mt-12 border-t border-line">
+      {
+        chapters.map((ch) => (
+          <li class="border-b border-line">
+            <a
+              href={chapterHref(section.id, course.id, chapterSlug(ch))}
+              data-astro-prefetch
+              class="flex gap-4 py-4 hover:bg-panel/40"
+            >
+              <span class="w-8 font-mono text-sm text-accent">{String(ch.data.order).padStart(2, "0")}</span>
+              <span>
+                <span class="block font-serif text-lg">{ch.data.title}</span>
+                <span class="mt-1 block text-sm text-muted">{ch.data.summary}</span>
+                <span class="mt-1 block font-mono text-[11px] text-faint">{ch.data.estMinutes} мин</span>
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="mt-10">
+      <ResetCourse course={course.id} />
+    </div>
+  </main>
+</Base>

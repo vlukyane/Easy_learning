@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Source Serif 4", "Iowan Old Style", Palatino, Georgia, serif;
+  --font-sans: "IBM Plex Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --color-paper: #10100e;
+  --color-panel: #181714;
+  --color-raised: #1f1d18;
+  --color-line: #2d2a23;
+  --color-ink: #ece6d8;
+  --color-muted: #9a9284;
+  --color-faint: #6f6a60;
+  --color-accent: #d4a017;
+  --color-accent-dim: #8a6a12;
+  --color-ok: #7d9a6a;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-paper);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  color: var(--color-ink);
+}
+
+a {
+  color: inherit;
+}
+
+.prose-lesson {
+  font-family: var(--font-serif);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--color-ink);
+}
+
+.prose-lesson h1,
+.prose-lesson h2,
+.prose-lesson h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+.prose-lesson h2 {
+  font-size: 1.35rem;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-lesson h3 {
+  font-size: 1.12rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-lesson p {
+  margin: 0.9rem 0;
+}
+
+.prose-lesson ul,
+.prose-lesson ol {
+  margin: 0.75rem 0 0.75rem 1.25rem;
+}
+
+.prose-lesson li {
+  margin: 0.3rem 0;
+}
+
+.prose-lesson ul {
+  list-style: disc;
+}
+
+.prose-lesson ol {
+  list-style: decimal;
+}
+
+.prose-lesson strong {
+  font-weight: 600;
+}
+
+.prose-lesson code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: var(--color-raised);
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--color-line);
+}
+
+.prose-lesson pre {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  background: var(--color-raised);
+  border: 1px solid var(--color-line);
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.prose-lesson pre code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.prose-lesson a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-lesson blockquote {
+  border-left: 2px solid var(--color-accent);
+  padding-left: 1rem;
+  color: var(--color-muted);
+  margin: 1.25rem 0;
+  font-style: italic;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+}
+
+::view-transition-old(lesson-pane) {
+  animation: 180ms ease-in both slide-out;
+}
+
+::view-transition-new(lesson-pane) {
+  animation: 220ms ease-out both slide-in;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}

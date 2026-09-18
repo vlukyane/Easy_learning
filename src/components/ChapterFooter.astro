@@ -1,0 +1,68 @@
+---
+interface Props {
+  course: string;
+  chapterId: string;
+  hubHref: string;
+  prevHref: string | null;
+  nextHref: string | null;
+}
+
+const { course, chapterId, hubHref, prevHref, nextHref } = Astro.props;
+---
+
+<footer
+  class="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6"
+  data-chapter-footer
+  data-course={course}
+  data-chapter-id={chapterId}
+  data-prev={prevHref ?? ""}
+  data-next={nextHref ?? ""}
+>
+  {
+    prevHref ? (
+      <a
+        href={prevHref}
+        data-astro-prefetch
+        class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted hover:text-ink"
+      >
+        ← Назад
+      </a>
+    ) : (
+      <a
+        href={hubHref}
+        data-astro-prefetch
+        class="font-mono text-[11px] uppercase tracking-[0.14em] text-muted hover:text-ink"
+      >
+        ← К курсу
+      </a>
+    )
+  }
+
+  <button
+    type="button"
+    data-complete-chapter={chapterId}
+    class="border border-line bg-raised px-3 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink hover:border-accent"
+  >
+    Отметить пройденной
+  </button>
+
+  {
+    nextHref ? (
+      <a
+        href={nextHref}
+        data-astro-prefetch
+        class="font-mono text-[11px] uppercase tracking-[0.14em] text-accent hover:text-ink"
+      >
+        Далее →
+      </a>
+    ) : (
+      <a
+        href={hubHref}
+        data-astro-prefetch
+        class="font-mono text-[11px] uppercase tracking-[0.14em] text-accent hover:text-ink"
+      >
+        К хабу курса →
+      </a>
+    )
+  }
+</footer>
