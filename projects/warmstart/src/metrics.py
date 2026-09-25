@@ -1,4 +1,8 @@
-"""False-hit and savings. Chapters 05 and 08."""
+"""False-hit и экономия. Главы 05 и 08.
+
+false_hit_rate реализован (чистая логика, тест зелёный). eval_layers и
+monthly_savings пишешь ты. Формула false-hit не меняется молча: false_hits / semantic_hits.
+"""
 
 from __future__ import annotations
 
@@ -6,10 +10,11 @@ from typing import Any
 
 
 def false_hit_rate(rows: list[dict[str, Any]] | str, threshold: float) -> float:
-    """false_hits / semantic_hits at this threshold.
+    """false_hits / semantic_hits при данном пороге.
 
-    Each row: {score, query_intent, neighbor_intent}.
-    Hit if score >= threshold. False-hit if hit and intents differ.
+    Строка: {score, query_intent, neighbor_intent}. Хит, если score >= threshold.
+    Ложное попадание — хит, у которого интенты различаются. rows может быть путём
+    к JSONL или уже загруженным списком.
     """
     if isinstance(rows, str):
         import json
@@ -31,8 +36,17 @@ def false_hit_rate(rows: list[dict[str, Any]] | str, threshold: float) -> float:
 
 
 def eval_layers(layers: list[str]) -> dict:
-    raise NotImplementedError("chapter 03: hit-rate per layer on the phrase corpus")
+    """Hit-rate по каждому слою (exact/normalized/...) на корпусе фраз. Глава 03.
+
+    Возврат: {layer: hit_rate}. Слои exact/normalized считаются без эмбеддингов.
+    """
+    raise NotImplementedError("глава 03: hit-rate по слоям на корпусе фраз")
 
 
 def monthly_savings(operating_point: dict | None = None, calls: int = 400_000) -> dict:
-    raise NotImplementedError("chapter 08: $ saved and expected errors at 400k/month")
+    """$ сэкономлено и ожидаемое число ошибок при 400k вызовов/мес. Глава 08.
+
+    Возьми hit-rate и false-hit из рабочей точки: экономия ≈ calls·hit_rate·цена_вызова,
+    ошибки ≈ calls·hit_rate·false_hit_rate. Верни оба числа рядом — экономия vs цена ошибок.
+    """
+    raise NotImplementedError("глава 08: $ экономии и ожидаемые ошибки при 400k/мес")

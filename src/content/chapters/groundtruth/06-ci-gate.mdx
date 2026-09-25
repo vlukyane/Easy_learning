@@ -24,6 +24,16 @@ estMinutes: 30
 
 <Command cwd="projects/groundtruth" title="Локальный гейт" code={`python scripts/ci_eval.py; echo exit:$?`} />
 
+Ожидаемо на текущем коде — зелёный гейт с машиночитаемой последней строкой:
+
+```text
+recall    0.805  (baseline 0.805)
+precision 0.340
+mrr       0.720
+GATE_OK recall=0.805 baseline=0.805 eps=0.01 split=dev k=10 n=40
+exit:0
+```
+
 На текущем коде ожидай exit 0 (равен baseline). Следующая глава специально сломает retrieval.
 
 <Action title="Сделай вывод машиночитаемым">

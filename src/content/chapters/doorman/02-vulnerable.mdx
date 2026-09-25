@@ -16,6 +16,12 @@ estMinutes: 30
 
 <Command cwd="projects/doorman" title="Оценка чистого резюме" code={`python -c "from src.agent.vulnerable import screen; print(screen('data/clean/sample.txt', 'data/job.txt'))"`} />
 
+Чистое резюме даёт структурированный score — пайплайн живой:
+
+```text
+{'score': 7, 'rationale': 'Python, 5 лет, есть тесты; нет опыта on-call', 'suspicious': false}
+```
+
 Зафиксируй поведение на чистых: распределение оценок. Это пригодится для FP.
 
 <Action title="Не чини baseline">

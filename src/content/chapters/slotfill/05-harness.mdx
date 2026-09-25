@@ -19,6 +19,14 @@ estMinutes: 25
 
 <Command cwd="projects/slotfill" title="Harness на test" code={`python -c "from src.eval.benchmark import main; main()"`} />
 
+Один прогон считает обе системы на одном test-наборе одним парсером:
+
+```text
+harness · split=test · n=200 · один parser
+  A prompt  field-level 0.94  exact-doc 0.71
+  B LoRA    field-level 0.96  exact-doc 0.78
+```
+
 Не смотри результаты по полям и не возвращайся крутить промпт/LoRA «на пять минут». Это уже подгонка. Зафиксируй цифры.
 
 <Trap title="Сравнение несравнимого">

@@ -41,6 +41,19 @@ estMinutes: 45
 
 Проверь, что в индекс попали и страницы без текста. Если нет — visual-вопросы снова слепые.
 
+```text
+image index: 128 страниц (в т.ч. 9 без текстового слоя) → data/chroma
+```
+
+Дымовая проверка retrieve по визуальному запросу — в топе должна быть страница со схемой, а не титул:
+
+```python
+from src.retrieve import retrieve_hybrid
+for hit in retrieve_hybrid("terminal X2 24V wiring", k=3):
+    print(hit["modality"], hit["pdf_id"], hit["page_num"], round(hit["score"], 3))
+# image example-manual 12 0.71   ← нужная страница вверху
+```
+
 <Practice items={[
   { id: "image-index", label: "Построен индекс по изображениям страниц (эмбеддинг картинки)", hint: "Можно page-level. Проверь retrieve по визуальному запросу: в топе страница со схемой, не случайный титул. Подпись VLM не должна быть единственным вектором." },
   { id: "no-text-pages", label: "Страницы без текстового слоя есть в image-индексе", hint: "Скан/схема без текста не выпали. Иначе visual-золото нечем искать." },

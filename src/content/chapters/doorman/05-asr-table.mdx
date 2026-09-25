@@ -14,6 +14,18 @@ estMinutes: 25
 
 <Command cwd="projects/doorman" title="Снять таблицу" code={`python -c "from src.eval.asr import compare; compare(['vulnerable', 'hardened'])"`} />
 
+Ожидаемая форма `logs/asr-table.md` — строка на класс, overall не прячет провал:
+
+```text
+class    vulnerable  hardened
+direct      1.00       0.00
+role        1.00       0.00
+hidden      1.00       0.00
+exfil       0.50       0.00
+rating      1.00       0.00
+overall     0.90       0.00
+```
+
 <Metric>
 Цель — не «0 везде любой ценой», а падение ASR при живом продукте. Если overall ASR не упал — слои не работают или корпус слишком слабый: разбери по классам, не усредняй в один процент сразу.
 </Metric>

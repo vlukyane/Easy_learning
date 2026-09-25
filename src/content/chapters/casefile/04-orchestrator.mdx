@@ -34,6 +34,18 @@ estMinutes: 35
 
 В выводе должны быть шаги и суммарный cost. Если шага не видно — трассы нет, эвал в главе 7 будет гаданием.
 
+```text
+CLM-001  intake → classify(auto, prio=low) → fraud(risk=low) → assess($760) → payout_gate
+         steps=4  cost=$0.0011  route=done
+```
+
+Заявка high-fraud обрывает путь до assessor:
+
+```text
+CLM-002  intake → classify(auto, prio=high) → fraud(risk=high, send_to_human=True) → human_review
+         steps=3  cost=$0.0009  route=stopped(human_review)   # шага assess нет
+```
+
 <Action title="Нарисуй граф состояний в комментарии">
 Вверху `orchestrator.py` — ASCII или список переходов. Это контракт маршрутизации, его потом тестируют синтетические маршруты.
 </Action>

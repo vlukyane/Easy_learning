@@ -22,6 +22,12 @@ estMinutes: 25
 
 Печатай hit-rate каждого слоя как **долю запросов, отвечённых этим слоем**, а не кумулятив вперемешку. Кумулятив тоже нужен — второй строкой.
 
+```text
+exact       hit-rate 0.08
+normalized  hit-rate 0.14   (сверх exact)
+cumulative  0.22
+```
+
 <Trap title="Нормализация, склеивающая интенты">
 Слишком агрессивные стоп-слова могут схлопнуть «cancel subscription» и «cancel trial». Проверь конфликты на ground truth до semantic.
 </Trap>

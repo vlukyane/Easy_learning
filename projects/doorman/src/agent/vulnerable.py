@@ -1,5 +1,11 @@
-"""Intentionally weak screener. Chapter 02. No email/HTTP tools — even here."""
+"""Намеренно слабый скринер. Глава 02.
+
+Базлайн для сравнения: склеивает резюме и вакансию БЕЗ разметки недоверенного
+блока — так инъекция из резюме перехватывает управление. Даже здесь у агента нет
+инструментов почты и HTTP (принцип наименьших привилегий — не давать чем эксфильтрировать).
+"""
 
 
 def screen(resume_path: str, job_path: str) -> dict:
-    raise NotImplementedError("chapter 02: glue resume + job with no untrusted markup")
+    """Оценить кандидата (уязвимо). Верни {"score", "rationale", ...}. Глава 02."""
+    raise NotImplementedError("глава 02: склей резюме + вакансию без разметки недоверенного")

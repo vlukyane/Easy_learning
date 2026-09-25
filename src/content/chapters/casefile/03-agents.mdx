@@ -42,6 +42,29 @@ estMinutes: 40
 
 Общий клиент и лог — как в Fieldnote: Haiku первым, JSONL на каждый вызов. Если JSON не парсится — **retry один раз**, потом `Handoff` со статусом error, а не «ну почти».
 
+Как получить типизированный выход через tool с JSON-схемой (паттерн, не решение):
+
+```python
+resp = client.messages.create(
+    model=MODEL, max_tokens=512,
+    tools=[{"name": "emit_intake",
+            "input_schema": IntakeResult.model_json_schema()}],
+    tool_choice={"type": "tool", "name": "emit_intake"},
+    messages=[{"role": "user", "content": narrative}],
+)
+data = resp.content[0].input                 # dict под схему
+return IntakeResult.model_validate(data)     # ValidationError → retry один раз
+```
+
+Вывод `intake.run` — это модель, а не строка:
+
+```text
+Handoff(from_agent='intake', to_agent='classifier',
+        payload=IntakeResult(claim_id='CLM-001', claimed_amount=800.0,
+                             facts=['rear door dented', 'parking lot', 'no injury']),
+        tokens_used=143, cost_usd=0.00021)
+```
+
 <Command cwd="projects/casefile" title="Прогнать intake на одной заявке" code={`python -c "from src.agents.intake import run; print(run('data/claims.jsonl'))"`} />
 
 Начни с одной строки из example-файла. Остальные агенты подключай по одному: не пиши оркестратор, пока каждый не возвращает валидную модель.

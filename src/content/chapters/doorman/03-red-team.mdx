@@ -28,6 +28,16 @@ estMinutes: 40
 
 <Command cwd="projects/doorman" title="Валидация корпуса" code={`python -c "from src.eval.asr import validate_attacks; validate_attacks()"`} />
 
+```text
+attacks ok: 10 rows, classes=['direct', 'exfil', 'hidden', 'rating', 'role']
+```
+
+Пропуск класса — не «пройдёт и так», а ошибка (дыра спрячется в таблице ASR):
+
+```text
+ValueError: missing classes {'hidden'}
+```
+
 <Trap title="Одна атака ≠ эвал">
 Нужны десятки, разные классы. Иначе «выживает» ничего не значит.
 </Trap>

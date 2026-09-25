@@ -18,6 +18,22 @@ estMinutes: 35
 
 `dump_scores` для каждого запроса пишет top-1 соседа, score, совпал ли intent_id. Это сырьё для false-hit.
 
+Как искать соседа и не находить самого себя (паттерн, не решение):
+
+```python
+import numpy as np
+sims = embs @ q_vec / (np.linalg.norm(embs, axis=1) * np.linalg.norm(q_vec))
+sims[self_idx] = -1.0                 # исключить сам запрос, иначе hit-rate=100%
+j = int(sims.argmax())
+# -> {"score": float(sims[j]), "query_intent": qi, "neighbor_intent": intents[j]}
+```
+
+Строка `logs/semantic-scores.jsonl` — ровно то, что ест `false_hit_rate`:
+
+```json
+{"score": 0.94, "query_intent": "password-reset", "neighbor_intent": "mfa-reset"}
+```
+
 <Action title="Запрети утечку самого запроса">
 При поиске соседа исключай идентичный ключ. Иначе hit-rate = 100% и ты ничему не научился.
 </Action>

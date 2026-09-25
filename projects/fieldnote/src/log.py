@@ -1,4 +1,8 @@
-"""JSONL logger for every model call. Chapter 02-setup."""
+"""JSONL-лог каждого вызова модели. Глава 02-setup.
+
+Пишет строку на вызов: модель, шаг, превью вход/выход, токены, латентность,
+стоимость, ok/ошибка. Этот лог — сырьё для метрик стоимости во всём курсе.
+"""
 
 from __future__ import annotations
 
@@ -44,14 +48,14 @@ def log_call(
 
 
 def smoke() -> None:
-    """Tiny Haiku call. Fill in with anthropic SDK in chapter 02."""
+    """Крошечный вызов Haiku. В главе 02 заменишь заглушку реальным anthropic SDK."""
     if not os.environ.get("ANTHROPIC_API_KEY"):
         from dotenv import load_dotenv
 
         load_dotenv()
     started = time.perf_counter()
-    # Student: replace with real anthropic.Anthropic().messages.create(...)
-    output = "smoke stub — wire Anthropic in chapter 02"
+    # Ученик: замени реальным anthropic.Anthropic().messages.create(...)
+    output = "smoke stub — подключи Anthropic в главе 02"
     latency_ms = (time.perf_counter() - started) * 1000
     log_call(
         model=os.environ.get("FIELDNOTE_MODEL", "claude-haiku-4-5-20251001"),

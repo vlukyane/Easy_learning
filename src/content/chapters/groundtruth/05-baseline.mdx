@@ -18,6 +18,13 @@ Baseline — снимок **текущей** системы, не цель из 
 
 <Command cwd="projects/groundtruth" title="Записать baseline" code={`python -c "from eval.metrics import write_baseline; write_baseline('eval/gold.jsonl', 'eval/baseline.json')"`} />
 
+После прогона `eval/baseline.json` — снимок, а не нули заглушки и не «хотим 0.9»:
+
+```json
+{"k": 10, "recall": 0.805, "precision": 0.34, "mrr": 0.72,
+ "n_queries": 40, "created_at": "2026-09-25T10:00:00Z"}
+```
+
 Epsilon: маленький допуск на флаки, например `0.01` абсолютных. Без epsilon любой шум красный; слишком большой epsilon — гейт мёртвый.
 
 <Action title="Закоммить baseline отдельно от кода retrieval">

@@ -30,6 +30,12 @@ estMinutes: 20
 
 Ожидание: exit ≠ 0 и в отчёте recall ниже baseline − ε.
 
+```text
+recall    0.410  (baseline 0.805)
+GATE_FAIL recall=0.410 baseline=0.805 eps=0.01 split=dev k=10 n=40
+exit:1
+```
+
 <Command cwd="projects/groundtruth" title="Вернуть как было и снова зелёный" code={`python scripts/ci_eval.py; echo exit:$?`} />
 
 Если есть GitHub — сделай PR с порчей и прикрепи скрин красного job. Если нет — двух локальных прогонов достаточно для учебного DoD; запиши вывод в `logs/gate-red.txt` и `logs/gate-green.txt`.

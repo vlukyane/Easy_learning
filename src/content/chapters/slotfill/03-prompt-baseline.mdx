@@ -20,6 +20,13 @@ Few-shot на 4–8 примерах из train (не test). Structured output �
 
 Парсер выхода общий: если JSON кривой — поле пустое, текст модели не засчитывается. Иначе сравнение с LoRA несравнимо.
 
+Ожидаемый вывод прогона A на срезе val:
+
+```text
+A prompt · split=val · n=30
+  field-level 0.94   exact-doc 0.70   USD/1000 ~5.2   p50 900ms
+```
+
 <Practice items={[
   { id: "schema", label: "Одна Pydantic-схема полей для систем A и B", hint: "Одинаковые имена полей. Парсер выхода общий. Не схема_v2 только для LoRA." },
   { id: "fewshot-train", label: "Few-shot примеры взяты только из train, не из val/test", hint: "Проверь id примеров в промпте против splits.json. Утечка здесь обесценит сравнение." },

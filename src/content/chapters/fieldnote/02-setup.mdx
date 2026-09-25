@@ -51,7 +51,25 @@ pip install -e ".[dev]"`} />
 
 <Command cwd="projects/fieldnote" title="Проверить Haiku и лог" code={`python -c "from src.log import smoke; smoke()"`} />
 
-Когда допишешь `smoke()`, команда должна: сделать крошечный запрос к Haiku, напечатать ответ и дописать строку в `logs/calls.jsonl`.
+Как выглядит вызов внутри `smoke()` (паттерн, не решение целиком):
+
+```python
+import anthropic
+client = anthropic.Anthropic()  # ключ берётся из ANTHROPIC_API_KEY
+resp = client.messages.create(
+    model="claude-haiku-4-5-20251001",
+    max_tokens=16,
+    messages=[{"role": "user", "content": "ping"}],
+)
+print(resp.content[0].text)
+usage = resp.usage  # .input_tokens, .output_tokens → в log_call
+```
+
+Когда допишешь `smoke()`, команда должна: сделать крошечный запрос к Haiku, напечатать ответ и дописать строку в `logs/calls.jsonl`. Ожидаемая строка лога:
+
+```json
+{"ts":"2026-09-25T10:00:00Z","model":"claude-haiku-4-5-20251001","step":"smoke","input_tokens":8,"output_tokens":12,"latency_ms":540,"cost_usd":0.00006,"ok":true}
+```
 
 <Action title="Открой JSONL глазами">
 После smoke-вызова открой `logs/calls.jsonl` и проверь, что поля на месте. Если поля нет — лог бесполезен, чини сразу.

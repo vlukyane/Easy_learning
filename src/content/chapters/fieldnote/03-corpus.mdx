@@ -39,7 +39,17 @@ estMinutes: 40
 
 <Command cwd="projects/fieldnote" title="Проверить схему золота" code={`python -c "from src.eval import validate_gold; validate_gold('data/gold.jsonl')"`} />
 
-`validate_gold` в скелете проверяет JSONL: оба `kind`, нет пустых ответов, страницы — положительные числа. Допиши файл `data/gold.jsonl` по примеру.
+`validate_gold` в скелете проверяет JSONL: оба `kind`, нет пустых ответов, страницы — положительные числа. Допиши файл `data/gold.jsonl` по примеру. Успешный прогон:
+
+```text
+gold ok: 10 rows, kinds=['text', 'visual']
+```
+
+Падение (нет visual-половины) выглядит так — это сигнал, а не «пройдёт и так»:
+
+```text
+ValueError: gold must include both kinds, got {'text'}
+```
 
 <Trap title="Все вопросы текстовые">
 Если visual-половина на самом деле читается из OCR-текста таблицы, ты не измеришь multimodal. Смотри на страницу: если ответ — это кривая или схема, kind=visual.

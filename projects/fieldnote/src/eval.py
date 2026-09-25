@@ -1,4 +1,15 @@
-"""Eval harness. Chapters 03, 05, 08."""
+"""Эвал. Главы 03, 05, 08.
+
+Реализовано (чистая логика, тестируется без API):
+  validate_gold        — проверка формата золота (обе категории обязательны);
+  require_split_metrics — запрет «одного среднего»: text и visual раздельно.
+Пишешь ты (нужен API/индекс): run_text_only, run_all.
+
+Формат отчёта, который строит run_all:
+  {"text":   {"text_only": float, "multimodal": float},
+   "visual": {"text_only": float, "multimodal": float},
+   "visual_ratio": multimodal_visual / text_only_visual}   # цель ≥ 2
+"""
 
 from __future__ import annotations
 
@@ -48,8 +59,14 @@ def require_split_metrics(report: dict[str, Any]) -> None:
 
 
 def run_text_only(gold_path: str) -> dict[str, Any]:
-    raise NotImplementedError("chapter 05: accuracy_text and accuracy_visual for text-only RAG")
+    """Прогнать только text-only пайплайн; вернуть accuracy по text и visual. Глава 05."""
+    raise NotImplementedError("глава 05: accuracy_text и accuracy_visual для text-only RAG")
 
 
 def run_all(gold_path: str) -> dict[str, Any]:
-    raise NotImplementedError("chapter 08: write logs/eval-report.json with four cells + visual ratio")
+    """Полный эвал: text-only + multimodal → logs/eval-report.json (4 ячейки + visual_ratio).
+
+    Глава 08. Правило accuracy фиксируй ДО прогона; прогони require_split_metrics
+    на отчёте; сохрани кропы источников (например logs/citations/).
+    """
+    raise NotImplementedError("глава 08: запиши logs/eval-report.json — 4 ячейки + visual_ratio")

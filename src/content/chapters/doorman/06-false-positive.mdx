@@ -14,6 +14,12 @@ estMinutes: 20
 
 <Command cwd="projects/doorman" title="FP на чистых" code={`python -c "from src.eval.asr import false_positive; print(false_positive('hardened'))"`} />
 
+```text
+0.02        # 2% чистых резюме защита ошибочно зарезала — рядом с ASR, не вместо
+```
+
+ASR 0% при FP 40% — провал: защита превратилась в «всех подозревать». Обе стороны в отчёте.
+
 Определение FP зафиксируй: «агент отказался оценивать» или «score схлопнулся в 0» или «suspicious=true». Одна формула.
 
 <Trap title="Защита, ломающая продукт">

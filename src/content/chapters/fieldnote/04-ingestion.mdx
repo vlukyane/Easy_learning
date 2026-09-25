@@ -22,11 +22,28 @@ Ingestion — это не «прочитать PDF». Это сохранить 
 
 `pymupdf` умеет и растр, и текстовый слой. `pdf2image` тоже подходит, но тогда текст бери отдельно.
 
+```python
+import fitz  # пакет pymupdf, модуль называется fitz
+doc = fitz.open(pdf_path)
+for i, page in enumerate(doc, start=1):
+    pix = page.get_pixmap(dpi=150)         # растр страницы
+    pix.save(f"data/pages/{pdf_id}/page-{i:03d}.png")
+    text = page.get_text("text")           # "" для скана — это норма, не skip
+    # -> Page(pdf_id, page_num=i, image_path=..., text=text, width, height)
+```
+
 Сохраняй PNG в `data/pages/{pdf_id}/page-012.png` с ведущими нулями — так проще цитировать.
 
 <Command cwd="projects/fieldnote" title="Прогнать один PDF" code={`python -c "from src.ingest import ingest_pdf; ingest_pdf('data/pdfs/YOUR.pdf')"`} />
 
 После команды в `data/pages/` должны лежать изображения, а рядом — JSON или sidecar с текстом страницы. Формат sidecar зафиксируй в `ingest.py` и не меняй без нужды: индекс будет на него опираться.
+
+```text
+data/pages/example-manual/
+  page-001.png   page-001.json   # {"text": "...", "width": 595, "height": 842}
+  page-002.png   page-002.json
+  page-012.png   page-012.json   # схема: text может быть ""
+```
 
 ## Что не делать сейчас
 

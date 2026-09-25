@@ -32,6 +32,12 @@ estMinutes: 35
 
 <Command cwd="projects/groundtruth" title="Ручной запрос" code={`python -c "from src.retrieve import retrieve; print(retrieve('duty to warn manufacturer', k=5))"`} />
 
+Результат — список стабильных id (`list[str]`), не абзацы решений:
+
+```text
+['doc-014', 'doc-001', 'doc-233', 'doc-097', 'doc-041']
+```
+
 <Action title="Зафиксируй k">
 В константе `K=10` (или 5). recall@k без зафиксированного k — разные метрики под одним именем.
 </Action>

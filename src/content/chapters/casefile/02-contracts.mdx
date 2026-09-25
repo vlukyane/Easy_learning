@@ -36,6 +36,23 @@ estMinutes: 30
 
 Тест в скелете проверяет, что невалидный хендофф поднимает `ValidationError`, а валидный — нет. Сначала он может быть skip — сними skip, когда модели готовы.
 
+```text
+3 passed in 0.06s
+```
+
+Как тип отвергает свободный текст — литералы вместо `str` (паттерн, не решение):
+
+```python
+from typing import Literal
+from pydantic import BaseModel
+
+class ClassifierResult(BaseModel):
+    claim_id: str
+    claim_type: str
+    priority: Literal["low", "medium", "high"]  # "urgent" → ValidationError
+    confidence: float
+```
+
 <Action title="Запрети свободный текст на границе">
 В типах не должно быть поля `raw_llm_output`, которое оркестратор «как-нибудь» парсит. Парсинг — внутри агента, наружу — только модель.
 </Action>

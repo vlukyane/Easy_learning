@@ -1,2 +1,11 @@
+"""Защищённый скринер. Глава 04.
+
+Слои (добавляй по одному и меряй ASR): разметка недоверенного блока (резюме — данные,
+не инструкции) → sanitize() → оценка ОБЯЗАНА опираться на факты (facts-required) →
+наименьшие привилегии (нет инструментов эксфильтрации). Тот же интерфейс, что у vulnerable.
+"""
+
+
 def screen(resume_path: str, job_path: str) -> dict:
-    raise NotImplementedError("chapter 04: untrusted block + sanitize + facts-required score")
+    """Оценить кандидата устойчиво к инъекции. Верни {"score","rationale",...}. Глава 04."""
+    raise NotImplementedError("глава 04: недоверенный блок + sanitize + оценка только по фактам")

@@ -30,6 +30,19 @@ Payout — не ещё один LLM-шаг. Это функция, котора�
 
 Тест не зовёт API: напрямую `execute_payout` без approval должен падать. Сними `skip`, когда функция настоящая.
 
+```text
+3 passed in 0.06s
+```
+
+Сам инвариант в двух строках (паттерн защиты):
+
+```python
+def execute_payout(decision: PayoutDecision) -> None:
+    if not decision.approved:
+        raise PermissionError("payout requires human approval")  # эту проверку не снимай
+    ...  # ledger только после флага
+```
+
 <Action title="Проиграй CLI-гейт">
 Прогони одну заявку до payout и откажись в `input()`. Убедись, что в трассе `payout_denied_by_human`, а не тихий пропуск шага.
 </Action>

@@ -20,6 +20,13 @@ estMinutes: 50
 
 <Command cwd="projects/slotfill" title="Тренировка (когда данные и GPU/облако готовы)" code={`python -c "from src.train import main; main()"`} />
 
+Обучение читает только train, ранняя остановка по val; гиперпараметры — в `logs/lora-hparams.json`:
+
+```text
+train on 1600 (test не тронут) · val field-level: 0.88 → 0.95 → 0.96 (early-stop)
+saved: adapters/slotfill-lora · logs/lora-hparams.json {rank:16, lr:2e-4, epochs:3}
+```
+
 Если железа нет: прогони B на крошечном срезе как proof-of-pipe и в выводе напиши, что полномасштабное сравнение не выполнено — это честнее фиктивных цифр.
 
 <Trap title="Test в early stopping">

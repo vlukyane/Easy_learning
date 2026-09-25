@@ -30,6 +30,13 @@ Recall@k = доля релевантных документов, попавши�
 
 <Command cwd="projects/groundtruth" title="Юнит метрик" code={`pytest tests/test_recall_gate.py -k recall`} />
 
+`evaluate` возвращает макро-среднее по запросам (словарь), а юнит зелёный без сети:
+
+```text
+{'recall': 0.81, 'precision': 0.34, 'mrr': 0.72, 'k': 10, 'n_queries': 40}
+2 passed in 0.01s
+```
+
 <Practice items={[
   { id: "impl", label: "recall@k / precision@k / MRR реализованы без API", hint: "Три функции в eval/metrics.py считают пересечение id, не ходят в OpenAI. Не заменяй recall на «есть ли хотя бы один hit». success@k можно добавить рядом, но гейт будет смотреть на recall@k. Ручной пример главы: 4 релевантных, 3 в top-10 → 0.75." },
   { id: "macro", label: "Отчёт — среднее по запросам, не микро по документам вперемешку", hint: "evaluate усредняет метрику по запросам: (r1+r2+…+rn)/n. Не складывай документы всех запросов в два огромных множества — запрос с 20 релевантными задавит запрос с одним. В словаре результата должны быть recall, precision, mrr, k, n_queries." },

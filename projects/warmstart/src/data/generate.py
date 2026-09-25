@@ -1,2 +1,15 @@
+"""Генератор синтетики. Глава 02.
+
+Смысл: у нас есть ground truth (какие фразы к какому интенту), поэтому false-hit
+измерим. Ключевой нюанс — конфликтные почти-дубликаты: разные интенты с похожими
+формулировками (например password-reset vs mfa-reset), чтобы семантика ошибалась.
+"""
+
+
 def main(intents: int = 50, phrases: int = 20) -> None:
-    raise NotImplementedError("chapter 02: synthesize intents.jsonl with conflicting near-duplicates")
+    """Сгенерировать data/intents.jsonl: intents интентов × phrases перефразировок.
+
+    Строка: {"intent_id","canonical_answer","phrases":[...]}. Обязательно заложи
+    конфликтные почти-дубликаты между интентами — иначе false-hit будет нулевым искусственно.
+    """
+    raise NotImplementedError("глава 02: синтезируй intents.jsonl с конфликтными почти-дубликатами")

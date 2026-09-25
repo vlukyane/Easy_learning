@@ -1,8 +1,9 @@
-# A vs B — fill in chapter 06
+# A vs B — заполнить в главе 06
 
-| system | field-level | exact-doc | USD/1000 | p50 ms | p95 ms |
-| --- | --- | --- | --- | --- | --- |
-| A prompt |  |  |  |  |  |
-| B LoRA |  |  |  |  |  |
+| system   | field-level | exact-doc | USD/1000 | p50 ms | p95 ms |
+|----------|-------------|-----------|----------|--------|--------|
+| A prompt |             |           |          |        |        |
+| B LoRA   |             |           |          |        |        |
 
-Cost note for B (inference only / inference + amortized train):
+Стоимость B укажи честно: только инференс / инференс + амортизированное обучение.
+Один и тот же test-набор и один parser для обеих систем (иначе сравнение недействительно).

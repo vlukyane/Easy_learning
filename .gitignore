@@ -18,3 +18,4 @@ projects/**/logs/*
 projects/**/results/*
 !projects/**/results/.gitkeep
 !projects/**/results/table.md
+.vercel

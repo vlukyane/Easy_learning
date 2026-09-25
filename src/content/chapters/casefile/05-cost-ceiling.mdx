@@ -30,6 +30,14 @@ estMinutes: 30
 
 <Command cwd="projects/casefile" title="Прогон с низким потолком" code={`python -c "from src.orchestrator import run_batch; run_batch(limit_usd=0.02)"`} />
 
+Ожидаемо: часть заявок обрывается статусом `stopped_cost_ceiling`, а не падает:
+
+```text
+CLM-003  intake → classify → fraud … would_exceed($0.02) → STOP
+         status=stopped_cost_ceiling  spent=$0.021  payout: не вызывался
+batch: 5 заявок, 2 остановлены по потолку (40%)
+```
+
 <Trap title="Бюджет как украшение">
 Если за 50 заявок никто не упёрся в потолок, ты его не тестировал. Сделай специально тяжёлые случаи.
 </Trap>

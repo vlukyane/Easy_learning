@@ -20,6 +20,11 @@ estMinutes: 35
 
 <Command cwd="projects/warmstart" title="Сгенерировать маленький корпус" code={`python -c "from src.data.generate import main; main(intents=50, phrases=20)"`} />
 
+```text
+data/intents.jsonl: 50 интентов × 20 фраз = 1000 строк
+конфликтных почти-дубликатов между интентами: 34   ← без них false-hit нулевой
+```
+
 Правило сплита: часть пар (query, cached_query) держи для валидации false-hit, не для подбора порога. Иначе рабочая точка подогнана.
 
 <Action title="Заложи конфликтующие интенты">

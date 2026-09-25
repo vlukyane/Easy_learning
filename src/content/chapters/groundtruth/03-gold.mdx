@@ -28,6 +28,10 @@ Held-out (глава про ловушки) не трогай при подбо�
 
 <Command cwd="projects/groundtruth" title="Валидация золота" code={`python -c "from eval.metrics import validate_gold; validate_gold('eval/gold.jsonl')"`} />
 
+```text
+gold ok: 40 queries
+```
+
 Проверки: все `relevant_ids` существуют в корпусе; нет пустых query; split заполнен.
 
 <Trap title="Подгонка под систему">

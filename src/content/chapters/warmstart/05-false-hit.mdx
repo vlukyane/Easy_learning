@@ -28,6 +28,13 @@ estMinutes: 25
 
 <Command cwd="projects/warmstart" title="Юнит формулы" code={`pytest tests/test_false_hit.py`} />
 
+Ожидаемо — число, воспроизводимое повторным запуском, и зелёный юнит:
+
+```text
+0.009        # false_hit_rate(..., 0.86): 0.9% попаданий с чужим ответом
+1 passed in 0.00s
+```
+
 <Trap title="Считать false-hit как 1 - accuracy бота">
 Это другая метрика. False-hit — свойство кэша, не генерации.
 </Trap>

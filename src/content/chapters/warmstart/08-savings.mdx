@@ -24,6 +24,14 @@ estMinutes: 25
 
 <Metric>
 В отчёте рядом: hit-rate, false-hit, порог, $ saved / мес, ожидаемые ошибочные ответы / мес. Без последней колонки экономия врёт.
+
+Ожидаемая форма `logs/savings.md`:
+
+```text
+threshold 0.86 · hit-rate 0.38 · false-hit 0.009 · calls/мес 400000
+saved:  ~$1180 / мес   (152k hits × экономия на вызов)
+errors: ~1370 / мес    (152k hits × 0.009 false-hit)   ← цена экономии
+```
 </Metric>
 
 <DoD>

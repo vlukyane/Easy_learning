@@ -26,6 +26,11 @@ estMinutes: 35
 python -c "from src.data.split import main; main()"
 pytest tests/test_split.py`} />
 
+```text
+data/splits.json: train 1600 · val 200 · test 200 · seed 13
+2 passed in 0.01s        # train∩val и train∩test пусты
+```
+
 <Action title="Разведи шаблоны по сплитам осторожно">
 Либо все шаблоны во всех сплитах, либо явный generalization-тест на held-out шаблон. Не клади уникальный шаблон только в train.
 </Action>

@@ -12,6 +12,15 @@ estMinutes: 30
 
 <Command cwd="projects/warmstart" title="Снять кривую" code={`python -c "from src.eval_curve import main; main()"`} />
 
+Ожидаемая форма `logs/curve.md` — несколько порогов, а не одна точка:
+
+```text
+threshold  hit_rate  false_hit
+0.82       0.41      0.031
+0.86       0.38      0.009   ← рабочая точка
+0.90       0.29      0.002
+```
+
 Рабочая точка — не «максимум hit». Это компромисс, который ты **называешь**:
 
 > hit-rate 38%, false-hit 0.9% при пороге 0.86

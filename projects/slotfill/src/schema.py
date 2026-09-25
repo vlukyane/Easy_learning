@@ -1,7 +1,15 @@
+"""Схема извлекаемых полей инвойса. Общий контракт для систем A и B.
+
+Обе системы (промпт и LoRA) обязаны возвращать один и тот же объект InvoiceFields —
+иначе бенчмарк A vs B несравним.
+"""
+
 from pydantic import BaseModel, Field
 
 
 class LineItem(BaseModel):
+    """Строка инвойса."""
+
     description: str
     quantity: float
     unit_price: float
@@ -9,6 +17,8 @@ class LineItem(BaseModel):
 
 
 class InvoiceFields(BaseModel):
+    """Извлечённые поля одного инвойса — единый выход A и B."""
+
     invoice_id: str
     carrier: str
     total: float

@@ -14,6 +14,17 @@ estMinutes: 20
 
 <Command cwd="projects/slotfill" title="Собрать таблицу" code={`python -c "from src.eval.benchmark import write_table; write_table()"`} />
 
+Заполненный `results/table.md` (числа — иллюстрация формы):
+
+```text
+| system   | field-level | exact-doc | USD/1000 | p50 ms | p95 ms |
+|----------|-------------|-----------|----------|--------|--------|
+| A prompt | 0.94        | 0.71      | 5.20     | 900    | 1600   |
+| B LoRA   | 0.96        | 0.78      | 0.40     | 120    | 260    |
+```
+
+Правильный исход — любой из трёх (B лучше / A лучше / зависит от объёма), лишь бы измерен честно.
+
 <Metric>
 Три оси обязательны. Accuracy без денег и латентности не отвечает на вопрос «что выбрать».
 </Metric>

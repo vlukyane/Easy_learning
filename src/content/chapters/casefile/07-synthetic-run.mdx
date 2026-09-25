@@ -44,6 +44,13 @@ estMinutes: 40
 - средние центы на заявку
 - 0 `ValidationError` на хендоффах
 
+Ожидаемая форма `logs/batch-summary.json`:
+
+```json
+{"n_claims": 60, "route_match": 0.92, "payouts_without_approval": 0,
+ "stopped_cost_ceiling": 0.12, "cents_per_claim": 0.31, "validation_errors": 0}
+```
+
 <Metric>
 Инварианты: 0 выплат без approval, 0 необработанных превышений ceiling (либо stop, либо ты поднял лимит осознанно), 0 ошибок парсинга. Плюс одно число: ¢/claim.
 </Metric>

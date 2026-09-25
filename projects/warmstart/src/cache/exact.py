@@ -1,4 +1,8 @@
-"""Exact cache. Chapters 03 and 07 (TTL)."""
+"""Точный кэш (слой 1). Главы 03 и 07 (TTL).
+
+Ключ — сырой запрос. Безопасный слой без ложных попаданий, но и хит-рейт низкий.
+TTL защищает от устаревших ответов (устаревший ответ = ложное попадание во времени).
+"""
 
 from __future__ import annotations
 
@@ -8,6 +12,8 @@ from datetime import datetime, timezone
 
 @dataclass
 class CacheEntry:
+    """Запись кэша: ответ, к какому интенту он относится, когда закэширован, TTL."""
+
     answer: str
     intent_id: str
     cached_at: datetime
@@ -18,6 +24,7 @@ _STORE: dict[str, CacheEntry] = {}
 
 
 def lookup(key: str, now: datetime | None = None) -> CacheEntry | None:
+    """Вернуть живую запись по точному ключу или None (протухшую считаем промахом)."""
     now = now or datetime.now(timezone.utc)
     entry = _STORE.get(key)
     if entry is None:
@@ -29,4 +36,5 @@ def lookup(key: str, now: datetime | None = None) -> CacheEntry | None:
 
 
 def put(key: str, entry: CacheEntry) -> None:
+    """Положить запись по точному ключу."""
     _STORE[key] = entry

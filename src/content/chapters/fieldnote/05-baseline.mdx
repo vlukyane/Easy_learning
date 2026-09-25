@@ -30,7 +30,13 @@ estMinutes: 40
 
 <Command cwd="projects/fieldnote" title="Прогнать золото text-only" code={`python -c "from src.eval import run_text_only; run_text_only('data/gold.jsonl')"`} />
 
-`run_text_only` должен напечатать accuracy отдельно для `kind=text` и `kind=visual` и дописать прогон в `logs/eval-text.json`.
+`run_text_only` должен напечатать accuracy отдельно для `kind=text` и `kind=visual` и дописать прогон в `logs/eval-text.json`. Ожидаемая форма:
+
+```text
+text-only baseline (data/gold.jsonl)
+  kind=text    accuracy 0.80  (4/5)
+  kind=visual  accuracy 0.20  (1/5)   ← низко, и это правильно
+```
 
 Ожидание: visual accuracy низкая. Если она высокая — пересмотри разметку: вопросы, скорее всего, не визуальные.
 
